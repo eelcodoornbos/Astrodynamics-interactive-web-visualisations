@@ -1,0 +1,99 @@
+body {
+	background: #ffffff;
+    font-family: "helvetica";
+}
+
+label {
+    display: inline-block;
+    width: 120px;
+    font-family: "helvetica";
+    font-size: 12px;
+}
+
+.formdisplay {
+	font-size:12px;
+    width: 120px;
+    font-family: "helvetica";
+    font-size: 12px;
+    text-align: "right";
+}
+
+input {
+    width: 150px;
+    text-align: right;
+}
+
+
+input[type='range'] {
+    -webkit-appearance: none !important;
+    background: lightgray;
+    height: 5px;
+    border-radius: 3px;
+    margin: 0;
+}
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    background: darkgray;
+    border: red;
+    border-radius: 3px;
+    height: 7px;
+    width: 7px;
+}
+
+line#velocity {
+	stroke: orange;
+	stroke-width: 3px;
+	marker-end: url("#velocityArrowHead");
+}
+
+marker#velocityArrowHead {
+	fill: orange;
+}
+
+line#radialVelocity {
+	stroke: red;
+	stroke-width: 3px;
+	marker-end: url("#radialVelocityArrowHead");
+}
+
+marker#radialVelocityArrowHead {
+	fill: red;
+}
+
+line#normalVelocity {
+	stroke: blue;
+	stroke-width: 3px;
+	marker-end: url("#normalVelocityArrowHead");
+}
+
+marker#normalVelocityArrowHead {
+	fill: blue;
+}
+
+
+button {
+    margin: 0 7px 0 0;
+    background-color: #f5f5f5;
+    border: 1px solid #dedede;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+
+    font-size: 12px;
+    line-height: 130%;
+    text-decoration: none;
+    font-weight: bold;
+    color: #565656;
+    cursor: pointer;
+}
+
+.axis path,
+    .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+}
+    .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+}
+
