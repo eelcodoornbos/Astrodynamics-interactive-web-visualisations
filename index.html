@@ -4,65 +4,118 @@
 <meta charset="utf-8">
 
     <title>Astrodynamics - solution of the two body problem</title>
-    <link rel="stylesheet" type="text/css" href="css/styles.css"/>
-    <script type="text/javascript" src="astro.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/skeleton.css"/>
+<!--     <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'> -->
 
+        
+    <link href='http://fonts.googleapis.com/css?family=Slabo+27px' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="astro.js"></script>
     <script type="text/javascript" src="lib/d3.js"></script>
+    <script type="text/javascript">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    processEscapes: true
+  },
+  TeX: {
+      extensions: ["color.js"]
+  }
+});
+    </script>
+    
+     <style type="text/css">
+        .sidenote {font-size: x-small;}
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+        
+    </style>
 </head>
 
 <body>
-	<h1>Solution of the two-body problem</h1>
-	<div id="form"></div>
-	<table>
-		<tr>
-			<td valign="top">
-    <h4>Kepler elements:</h4>
-    <label>Semi-major axis:</label>
-    <input type="text" name="time" id="semimajoraxis" style="text-align: right;"/>
-    <br/>
-    <label>Perigee height:</label>
-    <input type="text" name="perigeeheightdisplay" id="perigeeheightdisplay" style="text-align: right;"/>
-    <br/>
-    <label>Perigee height:</label>
-    <input type="range" min="0" max="8000" step="100" name="perigeeheight" id="perigeeheight" style="text-align: right;"/>
-    <br/>
+    $$\definecolor{velocity}{RGB}{255,165,0}$$
+    <div class="container">
+        <h1>Fundamentals of Astrodynamics</h1>
+<!--
+        <ul>
+            <li>Newton's laws of motion</li>
+            <li>Newton's law of gravitation</li>
+            <li>The many-body problem
+                <ul>
+                    <li>Inertial reference frames</li>
+                    <li>Integrals of motion</li>
+                    <li>Stability of the many-body problem</li>
+                </ul>
+            </li>
+            <li>Equations of relative motion</li>
+        </ul>
+-->
+        <h2>Velocity components</h2>
+        <div class="row">
+            <div class="nine columns">
+            <p>
+                When the <i>flight path angle</i>, $\gamma$, is introduced, the radial and normal velocity components and the angular momentum, per unit of mass, of the motion can be expressed as:
+                $$V_r = {\color{red}\dot{r}} = {\color{velocity}V} \sin \gamma$$
+                $$V_\theta = {\color{blue}r\dot{\theta}} = {\color{velocity}V} \cos \gamma$$
+                $$H = r {\color{velocity}V} \cos \gamma$$
+                Differentation of (5.22) to time yields another expression for the radial velocity component:
+                $${\color{red}\dot{r}} = \frac{(H^2/\mu)e\dot\theta\sin\theta}{(1+e\cos\theta)^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin\theta$$
+                An expression for the normal velocity component follows directly from (5.7) and (5.22):
+                $${\color{blue}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos \theta )$$
+                From (5.23), (5.24), (5.26) and (5.27) we obtain for the flight path angle:
+                $$\tan \gamma = \frac{\dot{r}}{r\dot{\theta}} = \frac{e \sin\theta}{1+e\cos\theta}$$
+<!--
+                Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
     
-    <label>Eccentricity:</label>
-    <input type="text" name="eccentricity" id="eccentricitydisplay" style="text-align: right;"/>
-    <br/>
-
-    <label>Eccentricity:</label>
-    <input type="range" name="eccentricity" id="eccentricity" min="0" max="4" step="0.01" style="text-align: right;"/>
-    <br/>
+                $$ \frac{d^2\vec{r}_{ki}}{dt^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
+                
+                where the index \(ki\) indicates that the motion of body \(i\)...
+            </p>
+-->
+            </div>
+            <div class="three columns sidenote">
+                1) Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            </div>
+        </div>
     
-    <label>True anomaly:</label>
-    <input type="text" name="time" id="trueanomaly" style="text-align: right;" readonly="true"/>
-    <br/><br/>
-    <label>Height:</label>
-    <input type="text" name="time" id="height" style="text-align: right;"/>
-    <br/>
-    <br/>
-    <label>Velocity:</label>
-    <input type="checkbox" name="showvelocity" id="showvelocity"/>
-    <br/>
-    <label>Radial velocity:</label>
-    <input type="checkbox" name="showradialvelocity" id="showradialvelocity"/>
-    <br/>
-    <label>Normal velocity:</label>    
-    <input type="checkbox" name="shownormalvelocity" id="shownormalvelocity"/>
-    <br/>
-
-	<input type="button" value="Start" id="startstopbutton"/>
-	<br/>    
-			</td>
-			<td>
-					<svg id="svg_animation">
-					</svg>
-			</td>
-		</tr>
-	</table>
-	
-<script type="text/javascript" src="drawing.js"></script>
+        <div class="row">
+            <div class = "nine columns">
+                <div id="orbit_velocity_components"></div>
+                <script type="text/javascript" src="js/orbit_velocity_components.js"></script>
+<!--
+                <div id="startstop"><button type="submit" id="startstopbutton"/>Start</button></div>
+                <div id="eccentrictyslider">
+                    <label>Eccentricity:</label>
+                    <input type="text" name="eccentricity" id="eccentricitydisplay" style="text-align: right;"/>
+                    <input type="range" name="eccentricity" id="eccentricity" min="0" max="4" step="0.01" style="text-align: right;"/>
+                </div>
+-->
+            </div>
+        </div>
+        <div class="row">
+            <div class="nine columns">
+                <p>
+<!--
+                    Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
+        
+                    $$ \frac{\mathrm{d}^2\vec{r}_{ki}}{\mathrm{d}t^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
+                    
+                    where the index \(ki\) indicates that the motion of body \(i\)...
+-->
+                </p>
+            </div> <!-- nine columns -->
+        </div> <!-- row -->
+    
+    </div> <!-- container -->
 </body>
 
 

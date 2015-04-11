@@ -170,7 +170,6 @@ function newGraphProperties(canvas, margin, ranges) {
 	var graph = {};
 	graph.width  = canvas.width - margin.left - margin.right;
 	graph.height = canvas.height - margin.top - margin.bottom;
-
 	graph.element = canvas.element.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -262,15 +261,20 @@ d3.select("#startstopbutton").on("click",function(d, i){startStopAnimation();});
 var showVelocity;
 
 render_form();
+/*
 canvas = {
-	width: 600,
-	height: 600
+	width: 500,
+	height: 500
 }
+*/
+canvas = {};
 canvas.element = d3.select("svg#svg_animation")
+/*
 	.attr("width",canvas.width)
-	.attr("height",canvas.height)
-	.attr("style","shape-rendering: geometricPrecision;")
-	.attr("style","background: #fafafa");
+	.attr("height",canvas.height);
+*/
+canvas.width = parseInt(canvas.element.style("width"));
+canvas.height = parseInt(canvas.element.style("height"));
 
 margins = {
     left: 75,
@@ -368,11 +372,11 @@ function startStopAnimation() {
     var button = d3.select("#startstopbutton");
     if (animationRunning) {
 		animationRunning = false;
-		button.attr("value","Start");
+		button.html("Start");
 		clearInterval(animationID);
     } else {
 	    animationRunning = true;
-		button.attr("value","Stop");
+		button.html("Stop");
 		animationID = setInterval(function () {
 			indx = indx + 1;
 			if (indx > numSteps-1) { indx = 0; }

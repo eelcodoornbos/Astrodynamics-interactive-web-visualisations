@@ -25,12 +25,12 @@ astro = (function() {
             this.semiMajorAxis = 200000; 
     		this.semiLatusRectum = 2.0 * (this.centralBody.radius+this.perigeeHeight);
             this.mean_motion = Math.sqrt(this.centralBody.gravitationalParameter / Math.pow(this.semiLatusRectum,3));
-            this.period = 10.0 * 60.0 * 60.0;            
+            this.period = 5.0 * 60.0 * 60.0;            
         } else {
     		this.semiMajorAxis = (this.centralBody.radius+this.perigeeHeight)/(1.0-this.eccentricity);
     		this.semiLatusRectum = this.semiMajorAxis * (1.0-Math.pow(this.eccentricity,2));
             this.mean_motion = Math.sqrt(-1.0 * this.centralBody.gravitationalParameter / Math.pow(this.semiMajorAxis,3));
-            this.period = 10.0 * 60.0 * 60.0;            
+            this.period = 5.0 * 60.0 * 60.0;            
         }		
 		this.angularMomentum = Math.sqrt(this.semiLatusRectum*centralBody.gravitationalParameter);
 	}
@@ -46,7 +46,7 @@ astro = (function() {
 			simulationTime = i * tstep;
 			
 			meanAnomaly = initial_meanAnomaly + simulationTime * kepler_orbit.mean_motion;
-			if (eccentricity < 1 && meanAnomaly > Math.PI) { meanAnomaly -= 2 * Math.PI; }
+			if (kepler_orbit.eccentricity < 1 && meanAnomaly > Math.PI) { meanAnomaly -= 2 * Math.PI; }
 			angles = trueAnomaly_from_meanAnomaly(meanAnomaly,kepler_orbit.eccentricity);
 
 			costheta = Math.cos(angles.trueAnomaly);
@@ -156,7 +156,68 @@ astro = (function() {
 	    eccentricAnomaly_new = hyperbolic_anomaly_new;
 	  }
 	  return { trueAnomaly: theta_rad, eccentricAnomaly: eccentricAnomaly_new };
-	}
+	};
+	
+    myobject.rungekutta4_singlestep = function(ode_function, y0, t, h) {
+        var yi = y0.dup();
+        var ti = t;
+
+        var f1 = ode_function(ti,yi);
+        var f2 = ode_function(ti+0.5*h,yi.add(f1.multiply(0.5*h)));
+        var f3 = ode_function(ti+0.5*h,yi.add(f2.multiply(0.5*h)));
+        var f4 = ode_function(ti+h,yi.add(f3.multiply(h)));
+        
+        var y = yi.add(f1.multiply(h/6))
+                  .add(f2.multiply(h/3))
+                  .add(f3.multiply(h/3))
+                  .add(f4.multiply(h/6));
+        //console.log(t,y.inspect());
+        return y;
+    };
+
+    myobject.rungekutta4 = function(ode_function, t0, y0, tf, h) {
+        var ti; // current time
+        var yi;
+        var t = t0;
+        var y = y0.dup();
+        var orbit = [];
+        i = 0;
+        while (t < tf) {
+            ti = t;
+            yi = y.dup();
+            
+            f1 = ode_function(ti,yi);
+            f2 = ode_function(ti+0.5*h,yi.add(f1.multiply(0.5*h)));
+            f3 = ode_function(ti+0.5*h,yi.add(f2.multiply(0.5*h)));
+            f4 = ode_function(ti+h,yi.add(f3.multiply(h)));
+            
+            y = yi.add(f1.multiply(h/6))
+                  .add(f2.multiply(h/3))
+                  .add(f3.multiply(h/3))
+                  .add(f4.multiply(h/6));
+                  
+            t = t + h;
+            orbit[i] = y;
+            i++;
+        }
+        return orbit;
+    };
+
+    myobject.ode_2body = function(t,y) {
+        if (y.dimensions() != 6) { console.log("ode_orbit: Expected 6 elements in vector"); }
+        var farray = [];
+        var r = Math.sqrt(Math.pow(y.e(1),2)+Math.pow(y.e(2),2)+Math.pow(y.e(3),2));
+        var mu, factor;
+        mu = 398600.44189; 
+        factor = - mu / Math.pow(r,3);
+        farray[0] = y.e(4);
+        farray[1] = y.e(5);
+        farray[2] = y.e(6);
+        farray[3] = factor * y.e(1);
+        farray[4] = factor * y.e(2);
+        farray[5] = factor * y.e(3);
+        return Vector.create(farray);
+    };
 
 	return myobject;
 }());
