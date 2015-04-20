@@ -93,8 +93,10 @@ var controller = {
 var view = {
     frame: 0,
     plotAxes: true,
-    marginMin: { top: 40, right: 250, bottom: 40, left: 40},
-    margin: { top: 50, right: 150, bottom: 50, left: 50 },
+    marginMin: { top: 40, right: 40, bottom: 40, left: 40},
+    margin: { top: 50, right: 40, bottom: 50, left: 50 },
+    orbitMaxWidthFraction: 0.6,
+    hodographMaxWidthFraction: 0.3,
     arrowLength: 5,
     arrowWidth: 3,
     aspectRatio: 1.77,
@@ -111,20 +113,24 @@ var view = {
         view.svg = view.container.append("svg");
         view.svg.attr("width", view.canvasWidth)
                 .attr("height", view.canvasHeight)
-                .style("shape-rendering","geometricPrecision");
+                .style("shape-rendering","geometricPrecision")
+                .style("overflow","visible");
         view.graphOrbit = view.svg.append("g");
         view.graphHodograph = view.svg.append("g");
                                 
         view.addControls();
         view.addMarkers();
         view.setOrbitPlotGeometry();
-        view.addAxes();
         view.addOrbit();
         view.addSatellite();
+        view.addAxes();
+
         view.updateOrbit();
         view.updateSatellitePosition(model.twoBodyData[0]);
     },
     scaleArrowStyle: function scaleArrowStyle(element,length) {
+        // Scales down the linewidth of a vector 
+        // if the length is shorter than the length of the arrowhead.
         var linewidth;
         if (Math.abs(length) < view.arrowLength * view.defaultVectorStrokeWidth) {
             linewidth = Math.abs(length) / (view.arrowLength) + "px";
@@ -147,8 +153,9 @@ var view = {
         // Assume data is very tall (hyperbolic orbit)
         view.plotHeight = view.canvasHeight - view.marginMin.top - view.marginMin.bottom;
         view.plotWidth = dataAspectRatio * view.plotHeight;
-        if (view.plotWidth > (view.canvasWidth - view.marginMin.left - view.marginMin.right)) { // Plot is very wide (elliptical orbit)
-            view.plotWidth = view.canvasWidth - view.marginMin.left - view.marginMin.right;
+        if (view.plotWidth > ( (view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.orbitMaxWidthFraction)) { 
+            // Plot is very wide (elliptical orbit)
+            view.plotWidth = ( view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.orbitMaxWidthFraction;
             view.plotHeight = view.plotWidth * (1 / dataAspectRatio);
             view.margin.left = view.marginMin.left;
             view.margin.right = view.marginMin.right;
@@ -162,11 +169,18 @@ var view = {
         }
         view.xScale = d3.scale.linear().range([0,  view.plotWidth]).domain([model.xMin,model.xMax]);
         view.yScale = d3.scale.linear().range([view.plotHeight, 0]).domain([model.yMin,model.yMax]);
-        view.xScaleHodograph = d3.scale.linear().range([view.canvasWidth-200,view.canvasWidth]).domain([-8,8]);
-        view.yScaleHodograph = d3.scale.linear().range([view.canvasHeight-200,view.canvasHeight-400]).domain([0,16]);
-        view.velocityScale = 200/16;
-        view.plotScale = (view.plotWidth)/(model.xMax - model.xMin);
         view.graphOrbit.attr("transform", "translate(" + view.margin.left + "," + view.margin.top + ")");
+        view.plotScale = (view.plotWidth)/(model.xMax - model.xMin);
+        view.velocityScale = 200/16;
+
+        view.hodographHeight = 0.5* (view.canvasHeight - view.marginMin.top - view.marginMin.bottom);
+        view.hodographWidth = view.hodographHeight * 16/12;
+//        view.hodographWidth = (view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.hodographMaxWidthFraction;
+
+        view.xScaleHodograph = d3.scale.linear().range([0,view.hodographWidth]).domain([-8,8]);
+        view.yScaleHodograph = d3.scale.linear().range([view.hodographHeight,0]).domain([0,12]);
+
+        view.graphHodograph.attr("transform", "translate(" + (view.canvasWidth - view.marginMin.right - view.hodographWidth) + "," + view.marginMin.top + ")");        
     },
     animate: function animate() {
         requestAnimationFrame( animate );
@@ -204,7 +218,7 @@ var view = {
             .attr("id","eccentricityslider")
             .attr("type","range")
             .attr("min","0")
-            .attr("max","2.5")
+            .attr("max","1.5")
             .attr("step","0.05")
             .style("width",300)
             .property("value",model.eccentricity)
@@ -265,18 +279,18 @@ var view = {
           .orient("bottom");        
         var yAxisHodograph = d3.svg.axis()
           .scale(view.yScaleHodograph)
-          .tickValues([2,4,6,8,10,12,14,16])
+          .tickValues([2,4,6,8,10,12])
           .orient("left");
-        view.svg.append('svg:g')
+        view.graphHodograph.append('svg:g')
           .attr('class', 'x axis')
-          .attr('transform', 'translate(' + (0) + ',' + (201) + ')')
-          .style("opacity", 0.3)
+          .attr('transform', 'translate(' + (0) + ',' + (view.hodographHeight) + ')')
+          .style("opacity", 0.2)
           .style("shape-rendering","crispEdges")
           .call(xAxisHodograph);
-        view.svg.append('svg:g')
+        view.graphHodograph.append('svg:g')
           .attr('class', 'y axis')
-          .attr('transform', 'translate(' + (view.canvasWidth-100) + ',' + (0) + ')')
-          .style("opacity", 0.3)
+          .attr('transform', 'translate(' + (0.5*view.hodographWidth) + ',' + (0) + ')')
+          .style("opacity", 0.2)
           .style("shape-rendering","crispEdges")              
           .call(yAxisHodograph);              
     },
@@ -406,9 +420,13 @@ var view = {
             .style("opacity","0.5");
     },
     addSatellite: function() {
-        var transformPosition = "translate(" + view.xScale(model.twoBodyData[0].x) + "," + view.yScale(model.twoBodyData[0].y) + ")";
-        view.satellite = view.graphOrbit.append("g")
-            .attr("transform",transformPosition);
+        view.satellite = view.graphOrbit.append("g");
+        view.satRadius = view.graphOrbit.append("line")
+            .attr("id","satradius")
+            .attr("stroke","black")
+            .attr("stroke-width","1px")
+            .attr("x1",view.xScale(0))
+            .attr("y1",view.yScale(0));            
         view.satRadialVelocity = view.satellite.append("line")
             .attr("id","radialVelocity")
             .attr("x1",0)
@@ -445,6 +463,11 @@ var view = {
             .style("stroke","orange")
             .style("stroke-width",view.defaultVectorStrokeWidth)
             .style("marker-end","url('#velocityArrowHead')");
+        view.satCircle = view.satellite.append("circle")
+            .attr("id","satcircle")
+    		.attr("fill","gray")
+    		.attr("stroke","none")
+    		.attr("r",5);    		           
         view.satRadialVelocityHodograph = view.graphHodograph.append("g").append("line")
             .attr("id","hodographRadialVelocity")
             .attr("x1",view.xScaleHodograph(0))
@@ -490,22 +513,11 @@ var view = {
             .attr("fill","none")
             .attr("cx",view.xScaleHodograph(0))
             .attr("cy",view.yScaleHodograph(0));            
-        view.satCircle = view.satellite.append("circle")
-            .attr("id","satcircle")
-    		.attr("fill","gray")
-    		.attr("stroke","none")
-    		.attr("r",5);
         view.hodographOrigin = view.graphHodograph.append("circle")
             .attr("id","satcircle")
     		.attr("fill","gray")
     		.attr("stroke","none")
-    		.attr("r",5);                  
-        view.satRadius = view.graphOrbit.append("line")
-            .attr("id","satradius")
-            .attr("stroke","black")
-            .attr("stroke-width","1px")
-            .attr("x1",view.xScale(0))
-            .attr("y1",view.yScale(0))
+    		.attr("r",5);
     },
     orbitLineFunction: d3.svg.line()
                 .x( function (d) { return (view.xScale(d.x)); } )
