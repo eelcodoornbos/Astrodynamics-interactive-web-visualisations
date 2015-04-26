@@ -3,12 +3,10 @@
 <head>
 <meta charset="utf-8">
 
-    <title>Astrodynamics - solution of the two body problem</title>
+    <title>Astrodynamics</title>
     <link rel="stylesheet" type="text/css" href="css/skeleton.css"/>
-<!--     <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'> -->
 
-        
-    <link href='http://fonts.googleapis.com/css?family=Slabo+27px' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Merriweather:400,400italic,700' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="astro.js"></script>
     <script type="text/javascript" src="lib/d3.js"></script>
@@ -23,56 +21,98 @@ MathJax.Hub.Config({
   }
 });
     </script>
-    
-     <style type="text/css">
-        .sidenote {font-size: x-small;}
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: black;
-            shape-rendering: crispEdges;
-        }
-        
-        .axis text {
-            font-family: sans-serif;
-            font-size: 11px;
-        }
-        
-    </style>
 </head>
 
 <body>
-    $$\definecolor{velocity}{RGB}{255,165,0}$$
-    <div class="container">
-        <h1>Fundamentals of Astrodynamics</h1>
+    <header>
+        <div class="title">
+            <div class="container">
+                <div class="row">
+                    <div class="nine columns">
+                        <h1>Astrodynamics explained</h1>
+                        <p>                        by Eelco Doornbos,
+                        based on “Fundamentals of Astrodynamics”
+                        by Karel Wakker
+                        </p>
+                    </div>
+                    <div class="three columns">
+                        <img class="tudelftlogo" src="img/tudelftlogo.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contents">
+            <div class="container">
+                <div class="row" id="menu">
 <!--
-        <ul>
-            <li>Newton's laws of motion</li>
-            <li>Newton's law of gravitation</li>
-            <li>The many-body problem
-                <ul>
-                    <li>Inertial reference frames</li>
-                    <li>Integrals of motion</li>
-                    <li>Stability of the many-body problem</li>
-                </ul>
-            </li>
-            <li>Equations of relative motion</li>
-        </ul>
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Two body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Conservation laws</li>
+                            <li>Shape of the orbit</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                    </div>
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Three body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Circular restricted</li>
+                            <li>Lagrange points</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                        </ul>
+                    </div>
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Three body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Circular restricted</li>
+                            <li>Lagrange points</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                        </ul>
+                    </div>
+                    <div class="three columns colophon">
+                        by Eelco Doornbos,
+                        based on "Fundamentals of Astrodynamics"
+                        by Karel Wakker
+                    </div>                
 -->
-        <h2>Velocity components</h2>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
         <div class="row">
-            <div class="nine columns">
+        <div class="nine columns">
+            <h4>Velocity components</h4>
+            <p> <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
+                Let’s now investigate the velocity of a satellite in its orbit. To define the direction, it is useful to decompose the <span class="v">velocity vector</span> in two orthogonal components in our polar coordinate system. The <span class="vr">radial velocity</span> tells us how fast the satellite is moving towards or away from the Earth, while the <span class="vn">normal velocity</span> tells us how fast the satellite is moving
+                in the horizontal plane.
+            </p>
             <p>
-                When the <i>flight path angle</i>, $\gamma$, is introduced, the radial and normal velocity components and the angular momentum, per unit of mass, of the motion can be expressed as:
-                $$V_r = {\color{red}\dot{r}} = {\color{velocity}V} \sin \gamma$$
-                $$V_\theta = {\color{blue}r\dot{\theta}} = {\color{velocity}V} \cos \gamma$$
+                When the <i>flight path angle</i>, $\gamma$, is introduced, the <span class="vr">radial</span> and <span class="vn">normal</span> components of the <span class="v">velocity</span> can be expressed as:
+                $${\color{vr}V_r} = {\color{vr}\dot{r}} = {\color{velocity}V} \sin \gamma$$
+                $${\color{vn}V_\theta} = {\color{vn}r\dot{\theta}} = {\color{velocity}V} \cos \gamma$$
                 $$H = r {\color{velocity}V} \cos \gamma$$
-                Differentation of (5.22) to time yields another expression for the radial velocity component:
-                $${\color{red}\dot{r}} = \frac{(H^2/\mu)e\dot\theta\sin\theta}{(1+e\cos\theta)^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin\theta$$
-                An expression for the normal velocity component follows directly from (5.7) and (5.22):
-                $${\color{blue}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos \theta )$$
+            </p>
+            <p>
+                We would now like to find expressions for these velocity components in terms of the position angle in the orbit $\theta$. Differentation of (5.22) to time yields the desired expression for the radial velocity component:
+                $${\color{vr}\dot{r}} = \frac{(H^2/\mu)e\dot\theta\sin\theta}{(1+e\cos\theta)^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin\theta$$
+                The expression for the normal velocity component follows directly from (5.7) and (5.22):
+                $${\color{vn}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos \theta )$$
+<!--
                 From (5.23), (5.24), (5.26) and (5.27) we obtain for the flight path angle:
                 $$\tan \gamma = \frac{\color{red}\dot{r}}{\color{blue}r\dot{\theta}} = \frac{e \sin\theta}{1+e\cos\theta}$$
+-->
 <!--
                 Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
     
@@ -83,24 +123,33 @@ MathJax.Hub.Config({
 -->
             </div>
             <div class="three columns sidenote">
-                1) Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             </div>
         </div>
     
         <div class="row">
             <div class = "nine columns">
                 <div id="orbit_velocity_components"></div>
-                <script type="text/javascript" src="js/orbit_velocity_components.js"></script>
-<!--
-                <div id="startstop"><button type="submit" id="startstopbutton"/>Start</button></div>
-                <div id="eccentrictyslider">
-                    <label>Eccentricity:</label>
-                    <input type="text" name="eccentricity" id="eccentricitydisplay" style="text-align: right;"/>
-                    <input type="range" name="eccentricity" id="eccentricity" min="0" max="4" step="0.01" style="text-align: right;"/>
-                </div>
--->
+            </div>
+            <div class = "three columns">
+                <b>Orbit parameters:</b></br>
+                <div id="rp_slider"></div>
+                $r_p = $ <span id="rp"></span> km</br>
+                <div id="e_slider"></div>
+                $e = $ <span id="e"></span></br>
+                </br>
+                <b>Velocity:</b></br>
+                ${\color{velocity}V} = $ <span id="v"></span> km/s</br>
+                ${\color{vr}V_r} =$ <span id="vr"></span> km/s</br>
+                ${\color{vn}V_\theta} =$ <span id="vtheta"></span> km/s</br>
+                </br>
+                <b>Time:</b>
+                <div id="orbit_velocity_components_controls"></div>
+                $t-t_p = $ <span id="t"></span> h</br>
+                <div id="time_slider"></div>
+
             </div>
         </div>
+        <script type="text/javascript" src="js/orbit_velocity_components.js"></script>
         <div class="row">
             <div class="nine columns">
                 <p>
@@ -116,6 +165,15 @@ MathJax.Hub.Config({
         </div> <!-- row -->
     
     </div> <!-- container -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="twelve columns">
+
+                </div>
+            </div>
+    </footer>
+    <script type="text/javascript" src="js/menu.js"></script>
 </body>
 
 

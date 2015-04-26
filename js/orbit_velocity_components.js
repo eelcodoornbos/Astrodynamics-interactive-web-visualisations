@@ -6,50 +6,57 @@ function vector() {
     var x2 = 25;
     var y2 = 25;
 
-    function exports(_selection) {
+    function exports(_selection) 
+    {
         _selection.each(function(_data) {
             d3.select(this).data(data).enter().append("line")
                 .attr("x1",x1)
                 .attr("y1",y1)
                 .attr("x2",x2)
                 .attr("y2",y2)
-                .style("stroke","red")
+                .style("stroke",viewController.vrColor)
                 .style("stroke-width","3px")
 //                .style("marker-end","url('#radialVelocityArrowHead')");
         });
     }
     
-    exports.arrowWidth = function(value) {
+    exports.arrowWidth = function(value) 
+    {
         if (!arguments.length) return arrowWidth;
         arrowWidth = value;
         return exports;
     };    
 
-    exports.arrowLength = function(value) {
+    exports.arrowLength = function(value) 
+    {
         if (!arguments.length) return arrowLength;
         arrowLength = value;
         return exports;
     };    
 
-    exports.x1 = function(value) {
+    exports.x1 = function(value) 
+    {
         if (!arguments.length) return x1;
         x1 = value;
         return exports;
     };
 
-    exports.y1 = function(value) {
+    exports.y1 = function(value) 
+    {
         if (!arguments.length) return y1;
         y1 = value;
         return exports;
     };
 
-    exports.x2 = function(value) {
+    exports.x2 = function(value) 
+    {
         if (!arguments.length) return x2;
         x2 = value;
         return exports;
     };
 
-    exports.y2 = function(value) {
+    exports.y2 = function(value) 
+    {
         if (!arguments.length) return y2;
         y2 = value;
         return exports;
@@ -59,15 +66,38 @@ function vector() {
 }
 
 
+function anglesToSVGPathArc(xScale,yScale,x,y,radius,startangle,endangle)
+{
+    var x1, x2, y1, y2, sweep, xrotation, largearc;
+    x1 = xScale(x + radius * Math.cos(startangle));
+    y1 = yScale(y + radius * Math.sin(startangle));
+    x2 = xScale(x + radius * Math.cos(endangle));
+    y2 = yScale(y + radius * Math.sin(endangle));
+    xrotation = 0;
+    largearc = 0;
+    if (endangle < startangle) 
+    {
+        sweep = 1;
+    } 
+    else
+    {
+       sweep = 0;    
+    }
+    var xradius = xScale(radius)-xScale(0);
+    var yradius = yScale(radius)-yScale(0);
+    var d = "M" + x1 + "," + y1 + "A" + xradius + "," + yradius + " " + xrotation + " " + largearc + " " + sweep + " " + x2 + "," + y2;
+    return d;
+}
+
 function sign(x){return x>0?1:x<0?-1:x;}
 var ORBIT_VELOCITY_COMPONENTS = (function() {
 
 var model = {
     
-    eccentricity: 0.5,
-    perigeeHeight: 800,
+    eccentricity: 1.1,
+    perigeeHeight: 500,
     framesPerSecond: 60,
-    simulationTimeDuration: 2,
+    simulationTimeDuration: 10,
 
     init: function model_init() {
         model.keplerOrbit = new astro.KeplerOrbit(astro.earth, model.perigeeHeight, model.eccentricity);    
@@ -85,172 +115,73 @@ var model = {
 var controller = {
     init: function controller_init() {
         model.init();
-        view.init();
-        view.animate();
+        viewController.init();
+        viewController.animate();
     },
+    
 };
 
-var view = {
+var viewController = {
     frame: 0,
     plotAxes: true,
     marginMin: { top: 40, right: 40, bottom: 40, left: 40},
     margin: { top: 50, right: 40, bottom: 50, left: 50 },
-    orbitMaxWidthFraction: 0.6,
-    hodographMaxWidthFraction: 0.3,
+    orbitMaxWidthFraction: 0.5,
+    hodographMaxWidthFraction: 0.4,
     arrowLength: 5,
     arrowWidth: 3,
-    aspectRatio: 1.77,
-    interpolationType: "cardinal",
+    aspectRatio: 1.5,
     defaultVectorStrokeWidth: 3,
-
-    init: function view_init() {
+    vColor: "orange",
+    vnColor: "red",
+    vrColor: "blue",
+    trueAnomalyColor: "purple",
+    flightPathAngleColor: "green",
+    
+    init: function viewController_init() {
         // Get the element that should contain the SVG
-        view.container = d3.select("#orbit_velocity_components")
+        viewController.container = d3.select("#orbit_velocity_components")
             .style("position","relative"); // Position relative to be able to absolutely position the button
-        view.canvasWidth = parseInt(view.container.style('width'), 10);
-        view.canvasHeight = view.canvasWidth / view.aspectRatio;
+        viewController.canvasWidth = parseInt(viewController.container.style('width'), 10);
+        viewController.canvasHeight = viewController.canvasWidth / viewController.aspectRatio;
+
         // Add the SVG
-        view.svg = view.container.append("svg");
-        view.svg.attr("width", view.canvasWidth)
-                .attr("height", view.canvasHeight)
-                .style("shape-rendering","geometricPrecision")
+        viewController.svg = viewController.container.append("svg");
+        viewController.svg.attr("width", viewController.canvasWidth)
+                .attr("height", viewController.canvasHeight)
                 .style("overflow","visible");
-        view.graphOrbit = view.svg.append("g");
-        view.graphHodograph = view.svg.append("g");
-                                
-        view.addControls();
-        view.addMarkers();
-        view.setOrbitPlotGeometry();
-        view.addOrbit();
-        view.addSatellite();
-        view.addAxes();
+        viewController.addControls();                                 
+        viewController.addMarkers();
 
-        view.updateOrbit();
-        view.updateSatellitePosition(model.twoBodyData[0]);
+        viewOrbit.init();
+        viewHodograph.init();
     },
-    scaleArrowStyle: function scaleArrowStyle(element,length) {
-        // Scales down the linewidth of a vector 
-        // if the length is shorter than the length of the arrowhead.
-        var linewidth;
-        if (Math.abs(length) < view.arrowLength * view.defaultVectorStrokeWidth) {
-            linewidth = Math.abs(length) / (view.arrowLength) + "px";
-        } else {
-            linewidth = view.defaultVectorStrokeWidth + "px";
-        }
-        element.style("stroke-width",linewidth);
-    },    
     startStopAnimation: function startStopAnimation() {
-        if (view.animationRunning) {
-    		view.animationRunning = false;
-    		view.startStopButton.html("Play");
-        } else {
-    	    view.animationRunning = true;
-    		view.startStopButton.html("Stop");
+        if (viewController.animationRunning) 
+        {
+    		viewController.animationRunning = false;
+    		viewController.startStopButton.html("Start");
+        } 
+        else 
+        {
+    	    viewController.animationRunning = true;
+    		viewController.startStopButton.html("Stop");
     	}
-    },
-    setOrbitPlotGeometry: function setOrbitPlotGeometry() {
-        var dataAspectRatio = (model.xMax - model.xMin) / (model.yMax - model.yMin);
-        // Assume data is very tall (hyperbolic orbit)
-        view.plotHeight = view.canvasHeight - view.marginMin.top - view.marginMin.bottom;
-        view.plotWidth = dataAspectRatio * view.plotHeight;
-        if (view.plotWidth > ( (view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.orbitMaxWidthFraction)) { 
-            // Plot is very wide (elliptical orbit)
-            view.plotWidth = ( view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.orbitMaxWidthFraction;
-            view.plotHeight = view.plotWidth * (1 / dataAspectRatio);
-            view.margin.left = view.marginMin.left;
-            view.margin.right = view.marginMin.right;
-            view.margin.top = (view.canvasHeight - view.plotHeight) / 2;
-            view.margin.bottom = view.margin.top;
-        } else {
-            view.margin.top = view.marginMin.top;
-            view.margin.bottom = view.marginMin.bottom;
-            view.margin.left = view.marginMin.left;
-            view.margin.right = view.marginMin.right;
-        }
-        view.xScale = d3.scale.linear().range([0,  view.plotWidth]).domain([model.xMin,model.xMax]);
-        view.yScale = d3.scale.linear().range([view.plotHeight, 0]).domain([model.yMin,model.yMax]);
-        view.graphOrbit.attr("transform", "translate(" + view.margin.left + "," + view.margin.top + ")");
-        view.plotScale = (view.plotWidth)/(model.xMax - model.xMin);
-        view.velocityScale = 200/16;
-
-        view.hodographHeight = 0.5* (view.canvasHeight - view.marginMin.top - view.marginMin.bottom);
-        view.hodographWidth = view.hodographHeight * 16/12;
-//        view.hodographWidth = (view.canvasWidth - view.marginMin.left - view.marginMin.right) * view.hodographMaxWidthFraction;
-
-        view.xScaleHodograph = d3.scale.linear().range([0,view.hodographWidth]).domain([-8,8]);
-        view.yScaleHodograph = d3.scale.linear().range([view.hodographHeight,0]).domain([0,12]);
-
-        view.graphHodograph.attr("transform", "translate(" + (view.canvasWidth - view.marginMin.right - view.hodographWidth) + "," + view.marginMin.top + ")");        
-    },
+    },    
     animate: function animate() {
         requestAnimationFrame( animate );
-        if (view.animationRunning) {
-            view.frame++;
-            if (view.frame >= model.numSteps) { view.frame = 0; }
-            var currentData = model.twoBodyData[view.frame];
-            view.updateSatellitePosition(currentData);
-            view.frameSlider.property("value",view.frame);
+        if (viewController.animationRunning) 
+        {
+            viewController.frame++;
+            if (viewController.frame >= model.numSteps) 
+            { 
+                viewController.frame = 0; 
+            }
+            var currentData = model.twoBodyData[viewController.frame];
+            viewOrbit.updateSatellitePosition(currentData);
+            viewHodograph.updateSatellitePosition(currentData);
+            viewController.frameSlider.property("value",viewOrbit.frame);
         }
-    },
-    addControls: function() {
-        // UI elements
-        view.startStopButton = view.container.append("button")
-            .attr("id","startstopbutton")
-            .html("Play")
-            .style("background","rgba(240,240,240,0.9)")
-            .style("position", "absolute")
-            .style("right","10px")
-            .style("top","10px")
-            .on("click",function(d, i){ view.startStopAnimation(); });
-        view.frameSlider = view.container.append("input")
-            .attr("id","frameslider")
-            .attr("type","range")
-            .attr("min","0")
-            .attr("max",model.numSteps - 1)
-            .attr("step","1")
-            .style("width",view.canvasWidth + "px")
-            .property("value",view.frame)
-            .on("input",function(){ 
-                view.frame = view.frameSlider.property("value"); 
-                view.updateSatellitePosition(model.twoBodyData[view.frame]); 
-            } );
-        view.eccentricitySlider = view.container.append("input")
-            .attr("id","eccentricityslider")
-            .attr("type","range")
-            .attr("min","0")
-            .attr("max","1.5")
-            .attr("step","0.05")
-            .style("width",300)
-            .property("value",model.eccentricity)
-            .on("input",function(){
-                var positionInOrbit = view.frame / model.numSteps;
-                model.eccentricity = parseFloat(view.eccentricitySlider.property("value")); 
-                model.init();
-                view.frame = parseInt(positionInOrbit * model.numSteps);
-                view.frameSlider.property("value",view.frame);
-                view.setOrbitPlotGeometry();
-                view.updateOrbit();
-                view.updateSatellitePosition(model.twoBodyData[view.frame]); 
-            } );
-        view.perigeeSlider = view.container.append("input")
-            .attr("id","perigeeslider")
-            .attr("type","range")
-            .attr("min","0")
-            .attr("max","12000")
-            .attr("step","100")
-            .style("width",300)
-            .property("value",model.perigeeHeight)
-            .on("input",function(){
-                var positionInOrbit = view.frame / model.numSteps;
-                model.perigeeHeight = parseFloat(view.perigeeSlider.property("value")); 
-                model.init();
-                view.frame = parseInt(positionInOrbit * model.numSteps);
-                view.frameSlider.property("value",view.frame);
-                view.setOrbitPlotGeometry();
-                view.updateOrbit();
-                view.updateSatellitePosition(model.twoBodyData[view.frame]); 
-            } );
-            
     },
     addMarkers: function() {
         // Markers for arrowheads
@@ -267,273 +198,460 @@ var view = {
                 .append("path")
                     .attr("d",arrowPath); 
         }
-        view.defs = view.svg.append("defs");
-        addArrowMarker({element: view.defs, id:"velocityArrowHead", arrowLength: view.arrowLength, arrowWidth:view.arrowWidth, color:"orange"});
-        addArrowMarker({element: view.defs, id:"radialVelocityArrowHead", arrowLength: view.arrowLength, arrowWidth:view.arrowWidth, color:"red"});        
-        addArrowMarker({element: view.defs, id:"normalVelocityArrowHead", arrowLength: view.arrowLength, arrowWidth:view.arrowWidth, color:"blue"});        
+        viewController.defs = viewController.svg.append("defs");
+        addArrowMarker({element: viewController.defs, id:"velocityArrowHead", 
+            arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.vColor});
+        addArrowMarker({element: viewController.defs, id:"radialVelocityArrowHead", 
+            arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.vrColor});        
+        addArrowMarker({element: viewController.defs, id:"normalVelocityArrowHead", 
+            arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.vnColor});
+        addArrowMarker({element: viewController.defs, id:"trueAnomalyArrowHead", 
+            arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.trueAnomalyColor});                    
+        addArrowMarker({element: viewController.defs, id:"flightPathAngleArrowHead", 
+            arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.flightPathAngleColor});
+    },    
+    addControls: function() {
+        // UI elements
+        viewController.startStopButton = viewController.container.append("button")
+            .attr("id","startstopbutton")
+            .html("Start")
+            .style("background","rgba(240,240,240,0.9)")
+            .style("position", "absolute")
+            .style("right","10px")
+            .style("top","10px")
+            .on("click",function(d, i){ viewController.startStopAnimation(); });
+        viewController.frameSlider = d3.select("#time_slider").append("input")
+            .attr("id","frameslider")
+            .attr("type","range")
+            .attr("min","0")
+            .attr("max",model.numSteps - 1)
+            .attr("step","1")
+            .style("width",viewOrbit.canvasWidth + "px")
+            .property("value",viewOrbit.frame)
+            .on("input",function(){ 
+                viewController.frame = viewController.frameSlider.property("value"); 
+                viewOrbit.updateSatellitePosition(model.twoBodyData[viewController.frame]); 
+                viewHodograph.updateSatellitePosition(model.twoBodyData[viewController.frame]);                 
+            } );
+        viewController.eccentricitySlider = d3.select("#e_slider").append("input")
+            .attr("id","eccentricityslider")
+            .attr("type","range")
+            .attr("min","0")
+            .attr("max","2.5")
+            .attr("step","0.05")
+            .style("width",300)
+            .property("value",model.eccentricity)
+            .on("input",function(){
+                var positionInOrbit = viewController.frame / model.numSteps;
+                model.eccentricity = parseFloat(viewController.eccentricitySlider.property("value")); 
+                model.init();
+                viewController.frame = parseInt(positionInOrbit * model.numSteps);
+                viewController.frameSlider.property("value",viewOrbit.frame);
+                viewController.frameSlider
+                    .attr("max",model.numSteps - 1);
+                viewOrbit.setOrbitPlotGeometry();
+                if (false) { 
+                    viewOrbit.setScale(); 
+                }
+                viewOrbit.updateOrbit();
+                viewOrbit.updateSatellitePosition(model.twoBodyData[viewController.frame]); 
+                viewHodograph.updateOrbit();
+                viewHodograph.updateSatellitePosition(model.twoBodyData[viewController.frame]); 
+            } );
+        viewController.perigeeSlider = d3.select("#rp_slider").append("input")
+            .attr("id","perigeeslider")
+            .attr("type","range")
+            .attr("min","0")
+            .attr("max","36000")
+            .attr("step","100")
+            .style("width","300")
+            .property("value",model.perigeeHeight)
+            .on("input",function(){
+                var positionInOrbit = viewController.frame / model.numSteps;
+                model.perigeeHeight = parseFloat(viewController.perigeeSlider.property("value")); 
+                model.init();
+                viewController.frame = parseInt(positionInOrbit * model.numSteps);
+                viewController.frameSlider.property("value",viewController.frame);
+                viewController.frameSlider
+                    .attr("max",model.numSteps - 1);                
+                viewOrbit.setOrbitPlotGeometry();
+                if (false) {
+                     viewOrbit.setScale(); 
+                }
+                viewOrbit.updateOrbit();
+                viewOrbit.updateSatellitePosition(model.twoBodyData[viewController.frame]); 
+                viewHodograph.updateOrbit();
+                viewHodograph.updateSatellitePosition(model.twoBodyData[viewController.frame]);
+            } );
+            
     },
-    addAxes: function() {
-        var xAxisHodograph = d3.svg.axis()
-          .scale(view.xScaleHodograph)
-          .tickValues([-8, -6,-4,-2, 0, 2, 4, 6, 8])
-          .orient("bottom");        
-        var yAxisHodograph = d3.svg.axis()
-          .scale(view.yScaleHodograph)
-          .tickValues([2,4,6,8,10,12])
-          .orient("left");
-        view.graphHodograph.append('svg:g')
-          .attr('class', 'x axis')
-          .attr('transform', 'translate(' + (0) + ',' + (view.hodographHeight) + ')')
-          .style("opacity", 0.2)
-          .style("shape-rendering","crispEdges")
-          .call(xAxisHodograph);
-        view.graphHodograph.append('svg:g')
-          .attr('class', 'y axis')
-          .attr('transform', 'translate(' + (0.5*view.hodographWidth) + ',' + (0) + ')')
-          .style("opacity", 0.2)
-          .style("shape-rendering","crispEdges")              
-          .call(yAxisHodograph);              
-    },
-    updateSatellitePosition: function updateSatellitePosition(currentData) {        
-        function adjustArrowLength(inputlength) {
-            var vectorLength;
-            if (Math.abs(inputlength) > view.arrowLength) {
-                vectorLength = inputlength - (view.arrowLength * sign(inputlength));
-            } else {
-                vectorLength = 0 * sign(inputlength);
-            }
-            return vectorLength;
+    scaleArrowStyle: function scaleArrowStyle(element,length) {
+        // Scales down the linewidth of a vector 
+        // if the length is shorter than the length of the arrowhead.
+        var linewidth;
+        if (Math.abs(length) < viewController.arrowLength * viewController.defaultVectorStrokeWidth) 
+        {
+            linewidth = Math.abs(length) / (viewController.arrowLength) + "px";
+        } 
+        else 
+        {
+            linewidth = viewController.defaultVectorStrokeWidth + "px";
         }
-        var transformPosition = "translate(" + view.xScale(currentData.x) + "," + view.yScale(currentData.y) + ")";
+        element.style("stroke-width",linewidth);
+    }
+};
+
+var viewOrbit = {
+    init: function viewOrbit_init() {
+        viewOrbit.graph = viewController.svg.append("g");
+        viewOrbit.setOrbitPlotGeometry();
+        viewOrbit.setScale();
+        viewOrbit.addOrbit();
+        viewOrbit.addSatellite();
+        viewOrbit.updateOrbit();
+        viewOrbit.updateSatellitePosition(model.twoBodyData[0]);
+    },
+    setOrbitPlotGeometry: function setOrbitPlotGeometry() {
+        var dataAspectRatio = (model.xMax - model.xMin) / (model.yMax - model.yMin);
+        // Assume data is very tall (hyperbolic orbit)
+        viewController.plotHeight = viewController.canvasHeight - viewController.marginMin.top - viewController.marginMin.bottom;
+        viewController.plotWidth = dataAspectRatio * viewController.plotHeight;
+        if (viewController.plotWidth > ( (viewController.canvasWidth - viewController.marginMin.left - viewController.marginMin.right) * viewController.orbitMaxWidthFraction)) 
+        { 
+            // Plot is very wide (elliptical orbit)
+            viewController.plotWidth = ( viewController.canvasWidth - viewController.marginMin.left - viewController.marginMin.right) * viewController.orbitMaxWidthFraction;
+            viewController.plotHeight = viewController.plotWidth * (1 / dataAspectRatio);
+            viewController.margin.left = viewController.marginMin.left;
+            viewController.margin.right = viewController.marginMin.right;
+//            viewController.margin.top = (viewController.canvasHeight - viewController.plotHeight) / 2;
+            viewController.margin.bottom = viewController.margin.top;
+        }
+        else 
+        {
+            viewController.margin.top = viewController.marginMin.top;
+            viewController.margin.bottom = viewController.marginMin.bottom;
+            viewController.margin.left = viewController.marginMin.left;
+            viewController.margin.right = viewController.marginMin.right;
+        } 
+        viewOrbit.graph.attr("transform", "translate(" + viewController.margin.left + "," + viewController.margin.top + ")");        
+    },
+    setScale: function setScale() {
+        viewOrbit.xScale = d3.scale.linear().range([0,  viewController.plotWidth]).domain([model.xMin,model.xMax]);
+        viewOrbit.yScale = d3.scale.linear().range([viewController.plotHeight, 0]).domain([model.yMin,model.yMax]);
+        viewOrbit.plotScale = (viewController.plotWidth)/(model.xMax - model.xMin);
+        viewOrbit.velocityScale = 200/16;
+    },
+    updateSatellitePosition: function updateSatellitePosition(currentData) {
+        d3.select("#v").html(currentData.v.toFixed(1));
+        d3.select("#vr").html(currentData.vradial.toFixed(1));
+        d3.select("#vtheta").html(currentData.vnormal.toFixed(1));        
+        var transformPosition = "translate(" + viewOrbit.xScale(currentData.x) + "," + viewOrbit.yScale(currentData.y) + ")";
         var transformVelocity = "rotate("+ (-1*(currentData.trueAnomalyDeg+90-currentData.flightPathAngleDeg)) +")";
         var transformRadialVelocity = "rotate("+ (-1*currentData.trueAnomalyDeg) +")";
-        view.satellite
+        viewOrbit.satellite
             .attr("transform",transformPosition);
-        view.satRadius
-            .attr("x2",view.xScale(currentData.x))
-            .attr("y2",view.yScale(currentData.y));
-        view.satVelocity
-            .attr("x2",currentData.v * view.velocityScale)
+        viewOrbit.satRadius
+            .attr("x1",viewOrbit.xScale(0))
+            .attr("y1",viewOrbit.yScale(0));            
+        viewOrbit.satRadius
+            .attr("x2",viewOrbit.xScale(currentData.x))
+            .attr("y2",viewOrbit.yScale(currentData.y));
+        viewOrbit.satVelocity
+            .attr("x2",currentData.v * viewOrbit.velocityScale)
             .attr("transform",transformVelocity);
-        view.satRadialVelocity
-            .attr("x2",currentData.vradial * view.velocityScale)
+        viewOrbit.satRadialVelocity
+            .attr("x2",currentData.vradial * viewOrbit.velocityScale)
             .attr("transform",transformRadialVelocity);
-        view.scaleArrowStyle(view.satRadialVelocity,currentData.vradial*view.velocityScale);
-        view.satNormalVelocity
-            .attr("y2",-1 * (currentData.vnormal * view.velocityScale))
+        viewController.scaleArrowStyle(viewOrbit.satRadialVelocity,currentData.vradial*viewOrbit.velocityScale);
+        viewOrbit.satNormalVelocity
+            .attr("y2",-1 * (currentData.vnormal * viewOrbit.velocityScale))
             .attr("transform",transformRadialVelocity);
-        view.satRadialVelocityHelper
+        viewOrbit.satRadialVelocityHelper
             .attr("x1",0)
-            .attr("y1",-1 * (currentData.vnormal * view.velocityScale))
-            .attr("x2",currentData.vradial * view.velocityScale)
-            .attr("y2",-1 * (currentData.vnormal * view.velocityScale))
+            .attr("y1",-1 * (currentData.vnormal * viewOrbit.velocityScale))
+            .attr("x2",currentData.vradial * viewOrbit.velocityScale)
+            .attr("y2",-1 * (currentData.vnormal * viewOrbit.velocityScale))
             .attr("transform",transformRadialVelocity);
-        view.satNormalVelocityHelper
-            .attr("x1",currentData.vradial * view.velocityScale)
+        viewOrbit.satNormalVelocityHelper
+            .attr("x1",currentData.vradial * viewOrbit.velocityScale)
             .attr("y1",0)
-            .attr("x2",currentData.vradial * view.velocityScale)
-            .attr("y2",-1 * (currentData.vnormal * view.velocityScale))
-            .attr("transform",transformRadialVelocity);            
-        view.satVelocityHodograph
-            .attr("x2",view.xScaleHodograph(currentData.vradial ))
-            .attr("y2",view.yScaleHodograph(currentData.vnormal ));
-        view.scaleArrowStyle(view.satRadialVelocityHodograph,view.xScaleHodograph(currentData.vradial)-view.xScaleHodograph(0));
-        view.satRadialVelocityHodograph
-            .attr("x2",view.xScaleHodograph(currentData.vradial ));
-        view.satNormalVelocityHodograph
-            .attr("y2",view.yScaleHodograph(currentData.vnormal ));            
-        view.satRadialVelocityHodographHelper
-            .attr("x1",view.xScaleHodograph(0))
-            .attr("y1",view.yScaleHodograph(currentData.vnormal))
-            .attr("x2",view.xScaleHodograph(currentData.vradial))
-            .attr("y2",view.yScaleHodograph(currentData.vnormal));
-        view.satNormalVelocityHodographHelper
-            .attr("x1",view.xScaleHodograph(currentData.vradial))
-            .attr("y1",view.yScaleHodograph(0))
-            .attr("x2",view.xScaleHodograph(currentData.vradial))
-            .attr("y2",view.yScaleHodograph(currentData.vnormal));
-        view.circularVelocityHodograph
-            .attr("cy",view.yScaleHodograph(Math.sqrt(currentData.centralBody.gravitationalParameter/currentData.r)));
-        view.escapeVelocityHodograph
-            .attr("r",view.yScaleHodograph(0)-view.yScaleHodograph(Math.sqrt(2*currentData.centralBody.gravitationalParameter/currentData.r)));
-            
+            .attr("x2",currentData.vradial * viewOrbit.velocityScale)
+            .attr("y2",-1 * (currentData.vnormal * viewOrbit.velocityScale))
+            .attr("transform",transformRadialVelocity);
+        viewOrbit.trueanomaly
+            .attr("d",anglesToSVGPathArc(viewOrbit.xScale,viewOrbit.yScale,0,0,6378/2,0,currentData.trueAnomaly));
     },    
     updateOrbit: function() {
-        if (model.eccentricity < 1) { view.interpolationType = "cardinal-closed"; } else {view.interpolationType = "cardinal"; }        
-        view.centralBody
-            .attr("cx",view.xScale(0))
-        	.attr("cy",view.yScale(0))
-        	.attr("r",view.plotScale*model.twoBodyData[0].centralBody.radius);
-        view.satRadius
-            .attr("x1",view.xScale(0))
-            .attr("y1",view.yScale(0));
-        	
-        view.xAxis
-            .attr("x1",view.xScale(model.xMin)-view.margin.left)
-            .attr("y1",view.yScale(0))
-            .attr("x2",view.xScale(model.xMax)+view.margin.left)
-            .attr("y2",view.yScale(0));
-        view.yAxis
-            .attr("x1",view.xScale(0))
-            .attr("y1",view.yScale(model.yMin)+view.margin.top)
-            .attr("x2",view.xScale(0))
-            .attr("y2",view.yScale(model.yMax)-view.margin.top);
-        view.orbit
-            .attr("d",view.orbitLineFunction(model.twoBodyData));
-        view.hodographCircle
-            .attr("cy",view.yScaleHodograph(model.keplerOrbit.centralBody.gravitationalParameter/model.keplerOrbit.angularMomentum))
-            .attr("r",view.xScaleHodograph(model.keplerOrbit.centralBody.gravitationalParameter*model.keplerOrbit.eccentricity/model.keplerOrbit.angularMomentum)-view.xScaleHodograph(0))
-        view.hodographOrigin
-            .attr("cx",view.xScaleHodograph(0))
-            .attr("cy",view.yScaleHodograph(0))        
-        view.frameSlider
-            .attr("max",model.numSteps - 1);
+        d3.select("#e").html(model.eccentricity.toFixed(2));
+        d3.select("#rp").html(model.perigeeHeight.toFixed(1));
+        viewOrbit.centralBody
+            .attr("cx",viewOrbit.xScale(0))
+        	.attr("cy",viewOrbit.yScale(0))
+        	.attr("r",viewOrbit.plotScale*model.twoBodyData[0].centralBody.radius);
+        viewOrbit.xAxis
+            .attr("x1",viewOrbit.xScale(model.xMin)-viewController.marginMin.left)
+            .attr("y1",viewOrbit.yScale(0))
+            .attr("x2",viewOrbit.xScale(model.xMax)+viewController.marginMin.left)
+            .attr("y2",viewOrbit.yScale(0));
+        viewOrbit.yAxis
+            .attr("x1",viewOrbit.xScale(0))
+            .attr("y1",viewOrbit.yScale(model.yMin)+viewController.marginMin.top)
+            .attr("x2",viewOrbit.xScale(0))
+            .attr("y2",viewOrbit.yScale(model.yMax)-viewController.marginMin.top);
+        viewOrbit.orbit
+            .attr("d",viewOrbit.orbitLineFunction(model.twoBodyData));
     },
     addOrbit: function() {
         // Central body
-        view.centralBody = view.graphOrbit.append("circle")
+        viewOrbit.centralBody = viewOrbit.graph.append("circle")
         	.attr("id","earth")
         	.attr("fill","#eee")
         	.attr("fill-opacity",1)
         	.attr("stroke","#ddd");
         // X-axis line    
-        view.xAxis = view.graphOrbit.append("line")
+        viewOrbit.xAxis = viewOrbit.graph.append("line")
             .attr("stroke","gray")
             .attr("opacity","0.5")
             .attr("stroke-width", "1");
         // Y-axis line
-        view.yAxis = view.graphOrbit.append("line")
+        viewOrbit.yAxis = viewOrbit.graph.append("line")
             .attr("stroke","gray")
             .attr("opacity","0.5")            
             .attr("stroke-width", "1");
-        view.orbit = view.graphOrbit.append("path")
+        viewOrbit.orbit = viewOrbit.graph.append("path")
             .attr("fill","none")
             .attr("stroke","black")
             .attr("stroke-width", "2");
-        view.hodographCircle = view.graphHodograph.append("circle")
-            .attr("id","hodographCircle")
-            .attr("fill","none")
-            .attr("stroke-width","1.5px")
-            .attr("opacity","0.8")
-            .attr("stroke","orange")
-            .attr("cx",view.xScaleHodograph(0))
-            .style("opacity","0.5");
     },
     addSatellite: function() {
-        view.satellite = view.graphOrbit.append("g");
-        view.satRadius = view.graphOrbit.append("line")
+        viewOrbit.satellite = viewOrbit.graph.append("g");
+        viewOrbit.satRadius = viewOrbit.graph.append("line")
             .attr("id","satradius")
             .attr("stroke","black")
             .attr("stroke-width","1px")
-            .attr("x1",view.xScale(0))
-            .attr("y1",view.yScale(0));            
-        view.satRadialVelocity = view.satellite.append("line")
+            .attr("x1",viewOrbit.xScale(0))
+            .attr("y1",viewOrbit.yScale(0));            
+        viewOrbit.satRadialVelocity = viewOrbit.satellite.append("line")
             .attr("id","radialVelocity")
             .attr("x1",0)
             .attr("y1",0)
             .attr("y2",0)
-            .style("stroke","red")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
+            .style("stroke",viewController.vrColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
             .style("marker-end","url('#radialVelocityArrowHead')");
-        view.satNormalVelocity = view.satellite.append("line")
+        viewOrbit.satNormalVelocity = viewOrbit.satellite.append("line")
             .attr("id","normalVelocity")
             .attr("x1",0)
             .attr("y1",0)
             .attr("x2",0)
-            .style("stroke","blue")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
+            .style("stroke",viewController.vnColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
             .style("marker-end","url('#normalVelocityArrowHead')");
-        view.satRadialVelocityHelper = view.satellite.append("line")
+        viewOrbit.satRadialVelocityHelper = viewOrbit.satellite.append("line")
             .attr("id","radialVelocity")
             .style("stroke","gray")
             .style("stroke-dasharray","2,1")
             .style("stroke-width","2px")
             .style("opacity","0.5");
-        view.satNormalVelocityHelper = view.satellite.append("line")
+        viewOrbit.satNormalVelocityHelper = viewOrbit.satellite.append("line")
             .attr("id","normalVelocity")
             .style("stroke","gray")
             .style("stroke-dasharray","2,1")
             .style("stroke-width","2px")
             .style("opacity","0.5");
-        view.satVelocity = view.satellite.append("line")
+        viewOrbit.satVelocity = viewOrbit.satellite.append("line")
             .attr("id","velocity")
             .attr("x1",0)
             .attr("y1",0)
             .attr("y2",0)
-            .style("stroke","orange")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
+            .style("stroke",viewController.vColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
             .style("marker-end","url('#velocityArrowHead')");
-        view.satCircle = view.satellite.append("circle")
+        viewOrbit.trueanomaly = viewOrbit.graph.append("path")
+            .attr("fill","none")
+            .attr("stroke",viewController.trueAnomalyColor)
+            .attr("stroke-width","2")
+            .style("marker-end","url('#trueAnomalyArrowHead')");
+        viewOrbit.satCircle = viewOrbit.satellite.append("circle")
             .attr("id","satcircle")
     		.attr("fill","gray")
-    		.attr("stroke","none")
-    		.attr("r",5);    		           
-        view.satRadialVelocityHodograph = view.graphHodograph.append("g").append("line")
-            .attr("id","hodographRadialVelocity")
-            .attr("x1",view.xScaleHodograph(0))
-            .attr("y1",view.yScaleHodograph(0))
-            .attr("y2",view.yScaleHodograph(0))            
-            .style("stroke","red")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
-            .style("marker-end","url('#radialVelocityArrowHead')");
-        view.satNormalVelocityHodograph = view.graphHodograph.append("g").append("line")
-            .attr("id","hodographNormalVelocity")
-            .attr("x1",view.xScaleHodograph(0))
-            .attr("y1",view.yScaleHodograph(0))
-            .attr("x2",view.xScaleHodograph(0))
-            .style("stroke","blue")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
-            .style("marker-end","url('#normalVelocityArrowHead')");   
-        view.satRadialVelocityHodographHelper = view.graphHodograph.append("line")
-            .attr("id","hodographRadialVelocity")
-            .style("stroke","gray")
-            .style("stroke-dasharray","2,1")
-            .style("stroke-width","2px")
-            .style("opacity","0.5");
-        view.satNormalVelocityHodographHelper = view.graphHodograph.append("line")
-            .attr("id","hodographNormalVelocity")
-            .style("stroke","gray")
-            .style("stroke-dasharray","2,1")
-            .style("stroke-width","2px")
-            .style("opacity","0.5");
-        view.satVelocityHodograph = view.graphHodograph.append("g").append("line")
-            .attr("id","hodographVelocity")
-            .attr("x1",view.xScaleHodograph(0))
-            .attr("y1",view.yScaleHodograph(0))
-            .style("stroke","orange")
-            .style("stroke-width",view.defaultVectorStrokeWidth)
-            .style("marker-end","url('#velocityArrowHead')");    
-        view.circularVelocityHodograph = view.graphHodograph.append("circle")
-            .attr("fill","lightgray")
-            .attr("r","4")                         
-            .attr("cx",view.xScaleHodograph(0));
-        view.escapeVelocityHodograph = view.graphHodograph.append("circle")
+    		.attr("stroke","white")
+    		.attr("stroke-width","1px")
+    		.attr("r",5);            
+    },
+    orbitLineFunction: d3.svg.line()
+                .x( function (d) { return (viewOrbit.xScale(d.x)); } )
+                .y( function (d) { return (viewOrbit.yScale(d.y)); } )
+    };
+
+var viewHodograph = {
+    init: function() {
+        viewHodograph.graph = viewController.svg.append("g");
+        viewHodograph.hodographHeight = 0.5 * (viewController.canvasHeight - viewController.marginMin.top - viewController.marginMin.bottom);
+        viewHodograph.hodographWidth = viewHodograph.hodographHeight * 16/12;
+        if (viewHodograph.hodographWidth > viewController.hodographMaxWidthFraction * viewController.canvasWidth) 
+        {
+            viewHodograph.hodographWidth = viewController.hodographMaxWidthFraction * viewController.canvasWidth;
+            viewHodograph.hodographHeight = viewHodograph.hodographWidth * 12/16;
+        }
+            
+        viewHodograph.xScale = d3.scale.linear().range([0,viewHodograph.hodographWidth]).domain([-8,8]);
+        viewHodograph.yScale = d3.scale.linear().range([viewHodograph.hodographHeight,0]).domain([0,12]);
+        // Clipping path
+        viewController.defs.append("svg:clipPath").attr("id","cliphodograph").append("svg:rect")
+            .attr("x",viewHodograph.xScale(-8))
+            .attr("y",viewHodograph.yScale(12))
+            .attr("width",viewHodograph.xScale(8)-viewHodograph.xScale(-8))
+            .attr("height",viewHodograph.yScale(0)-viewHodograph.yScale(12));
+
+        viewHodograph.graph.attr("transform", 
+                                          "translate(" + (viewController.canvasWidth - viewController.marginMin.right - viewHodograph.hodographWidth) + "," +
+                                                          viewController.marginMin.top + ")");
+        viewHodograph.addAxes();
+        viewHodograph.addOrbit();
+        viewHodograph.updateOrbit();
+        viewHodograph.addSatellite();
+        viewHodograph.updateSatellitePosition(model.twoBodyData[0]);
+    },
+    addAxes: function() {
+        var xAxisHodograph = d3.svg.axis()
+          .scale(viewHodograph.xScale)
+          .tickValues([-8, -6,-4,-2, 0, 2, 4, 6, 8])
+          .orient("bottom");        
+        var yAxisHodograph = d3.svg.axis()
+          .scale(viewHodograph.yScale)
+          .tickValues([2,4,6,8,10,12])
+          .orient("left");
+        viewHodograph.graph.append('svg:g')
+          .attr('class', 'x axis')
+          .attr('transform', 'translate(' + (0) + ',' + (viewHodograph.hodographHeight) + ')')
+          .style("opacity", 1.0)
+          .call(xAxisHodograph);
+        viewHodograph.graph.append('svg:g')
+          .attr('class', 'y axis')
+          .attr('transform', 'translate(' + (0.5*viewHodograph.hodographWidth) + ',' + (0) + ')')
+          .style("opacity", 1.0)
+          .call(yAxisHodograph);              
+    },    
+    updateSatellitePosition: function updateSatellitePosition(currentData) {        
+        viewController.scaleArrowStyle(viewHodograph.satRadialVelocity,viewHodograph.xScale(currentData.vradial)-viewHodograph.xScale(0));
+        viewHodograph.satRadialVelocity
+            .attr("x2",viewHodograph.xScale(currentData.vradial ));
+        viewHodograph.satNormalVelocity
+            .attr("y2",viewHodograph.yScale(currentData.vnormal ));            
+        viewHodograph.satVelocity
+            .attr("x2",viewHodograph.xScale(currentData.vradial))
+            .attr("y2",viewHodograph.yScale(currentData.vnormal));
+        viewHodograph.satRadialVelocityHelper
+            .attr("x1",viewHodograph.xScale(0))
+            .attr("y1",viewHodograph.yScale(currentData.vnormal))
+            .attr("x2",viewHodograph.xScale(currentData.vradial))
+            .attr("y2",viewHodograph.yScale(currentData.vnormal));
+        viewHodograph.satNormalVelocityHelper
+            .attr("x1",viewHodograph.xScale(currentData.vradial))
+            .attr("y1",viewHodograph.yScale(0))
+            .attr("x2",viewHodograph.xScale(currentData.vradial))
+            .attr("y2",viewHodograph.yScale(currentData.vnormal));
+        var circularVelocity = Math.sqrt(currentData.centralBody.gravitationalParameter/currentData.r)
+        viewHodograph.circularVelocityHodograph
+            .attr("cy",viewHodograph.yScale(circularVelocity))
+        viewHodograph.escapeVelocityHodograph
+            .attr("r",viewHodograph.yScale(0)-viewHodograph.yScale(Math.sqrt(2*currentData.centralBody.gravitationalParameter/currentData.r)));
+        viewHodograph.flightPathAngle
+            .attr("d",anglesToSVGPathArc(viewHodograph.xScale,viewHodograph.yScale,0,0,3,Math.PI/2,Math.PI/2-currentData.flightPathAngle));
+    },        
+    updateOrbit: function() {
+        viewHodograph.hodographCircle
+            .attr("cy",viewHodograph.yScale(model.keplerOrbit.centralBody.gravitationalParameter/model.keplerOrbit.angularMomentum))
+            .attr("r",viewHodograph.xScale(model.keplerOrbit.centralBody.gravitationalParameter*model.keplerOrbit.eccentricity/model.keplerOrbit.angularMomentum)-viewHodograph.xScale(0))
+    },
+    addOrbit: function() {
+        viewHodograph.hodographCircle = viewHodograph.graph.append("svg:circle")
+            .attr("id","hodographCircle")
+            .attr("fill","none")
+            .attr("stroke-width","3px")
+            .attr("opacity","0.8")
+            .attr("stroke",viewController.vColor)
+            .attr("cx",viewHodograph.xScale(0))
+            .style("opacity","0.3")
+            .attr("clip-path","url(#cliphodograph)");
+    },    
+    addSatellite: function() {
+        viewHodograph.circularVelocityHodograph = viewHodograph.graph.append("circle")
+            .attr("fill","red")
+            .attr("stroke","white")
+            .attr("stroke-width","1px")              
+            .attr("cx",viewHodograph.xScale(0))
+            .attr("r",4)
+            .style("visibility","visible");            
+        viewHodograph.escapeVelocityHodograph = viewHodograph.graph.append("circle")
             .attr("stroke","lightgray")
             .attr("stroke-width","1px")
             .attr("fill","none")
-            .attr("cx",view.xScaleHodograph(0))
-            .attr("cy",view.yScaleHodograph(0));            
-        view.hodographOrigin = view.graphHodograph.append("circle")
+            .attr("cx",viewHodograph.xScale(0))
+            .attr("cy",viewHodograph.yScale(0))
+            .attr("clip-path","url(#cliphodograph)")
+            .style("visibility","visible");
+        viewHodograph.flightPathAngle = viewHodograph.graph.append("path")
+            .attr("fill","none")
+            .attr("stroke",viewController.flightPathAngleColor)
+            .attr("stroke-width","2")
+            .attr("opacity","0.8")
+            .style("marker-end","url('#flightPathAngleArrowHead')");            
+        viewHodograph.satRadialVelocity = viewHodograph.graph.append("g").append("line")
+            .attr("id","hodographRadialVelocity")
+            .attr("x1",viewHodograph.xScale(0))
+            .attr("y1",viewHodograph.yScale(0))
+            .attr("y2",viewHodograph.yScale(0))            
+            .style("stroke",viewController.vrColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
+            .style("marker-end","url('#radialVelocityArrowHead')");
+        viewHodograph.satNormalVelocity = viewHodograph.graph.append("g").append("line")
+            .attr("id","hodographNormalVelocity")
+            .attr("x1",viewHodograph.xScale(0))
+            .attr("y1",viewHodograph.yScale(0))
+            .attr("x2",viewHodograph.xScale(0))
+            .style("stroke",viewController.vnColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
+            .style("marker-end","url('#normalVelocityArrowHead')");   
+        viewHodograph.satRadialVelocityHelper = viewHodograph.graph.append("line")
+            .attr("id","hodographRadialVelocityHelper")
+            .style("stroke","gray")
+            .style("stroke-dasharray","2,1")
+            .style("stroke-width","2px")
+            .style("opacity","0.5");
+        viewHodograph.satNormalVelocityHelper = viewHodograph.graph.append("line")
+            .attr("id","hodographNormalVelocityHelper")
+            .style("stroke","gray")
+            .style("stroke-dasharray","2,1")
+            .style("stroke-width","2px")
+            .style("opacity","0.5");
+        viewHodograph.satVelocity = viewHodograph.graph.append("g").append("line")
+            .attr("id","hodographVelocity")
+            .attr("x1",viewHodograph.xScale(0))
+            .attr("y1",viewHodograph.yScale(0))
+            .style("stroke",viewController.vColor)
+            .style("stroke-width",viewController.defaultVectorStrokeWidth)
+            .style("marker-end","url('#velocityArrowHead')");  
+        viewHodograph.hodographOrigin = viewHodograph.graph.append("circle")
             .attr("id","satcircle")
     		.attr("fill","gray")
-    		.attr("stroke","none")
-    		.attr("r",5);
+    		.attr("stroke","white")
+    		.attr("stroke-width","1px")
+    		.attr("r",5)
+            .attr("cx",viewHodograph.xScale(0))
+            .attr("cy",viewHodograph.yScale(0));
     },
-    orbitLineFunction: d3.svg.line()
-                .x( function (d) { return (view.xScale(d.x)); } )
-                .y( function (d) { return (view.yScale(d.y)); } ),
     hodographLineFunction: d3.svg.line()
-                .x( function (d) { return (view.xScaleHodograph(d.vradial)); } )
-                .y( function (d) { return (view.yScaleHodograph(d.vnormal)); } )
-                
-//                .interpolate(view.interpolationType)
+                .x( function (d) { return (viewHodograph.xScale(d.vradial)); } )
+                .y( function (d) { return (viewHodograph.yScale(d.vnormal)); } )    
 };
 
 controller.init();
 
 /*
 var myvector = vector().arrowWidth(30).arrowLength(15);
-var testvector = view.svg.append("g").attr("id","testvector");
+var testvector = viewOrbit.svg.append("g").attr("id","testvector");
 myvector.x2(25);
 testvector.call(myvector);
 myvector.x2(50);
@@ -542,10 +660,10 @@ testvector.call(myvector);
 
 /*
         xAxisHodograph = d3.svg.axis()
-          .scale(view.xScaleHodograph)
+          .scale(viewOrbit.xScaleHodograph)
           .tickValues([-18, -16,-14,-12,-10,-8,-6,-3, 0, 12, 14, 16, 18])
           .orient("top");        
-        view.svg.selectAll(".x.axis")
+        viewOrbit.svg.selectAll(".x.axis")
           .call(xAxisHodograph);
 */
 }) ();

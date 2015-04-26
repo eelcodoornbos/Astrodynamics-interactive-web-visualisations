@@ -25,12 +25,12 @@ astro = (function() {
             this.semiMajorAxis = 200000; 
     		this.semiLatusRectum = 2.0 * (this.centralBody.radius+this.perigeeHeight);
             this.mean_motion = Math.sqrt(this.centralBody.gravitationalParameter / Math.pow(this.semiLatusRectum,3));
-            this.period = 5.0 * 60.0 * 60.0;            
+            this.period = 8.0 * 60.0 * 60.0;            
         } else {
     		this.semiMajorAxis = (this.centralBody.radius+this.perigeeHeight)/(1.0-this.eccentricity);
     		this.semiLatusRectum = this.semiMajorAxis * (1.0-Math.pow(this.eccentricity,2));
             this.mean_motion = Math.sqrt(-1.0 * this.centralBody.gravitationalParameter / Math.pow(this.semiMajorAxis,3));
-            this.period = 5.0 * 60.0 * 60.0;            
+            this.period = 8.0 * 60.0 * 60.0;            
         }		
 		this.angularMomentum = Math.sqrt(this.semiLatusRectum*centralBody.gravitationalParameter);
 	}
