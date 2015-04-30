@@ -7,20 +7,22 @@
     <link rel="stylesheet" type="text/css" href="css/skeleton.css"/>
 
     <link href='http://fonts.googleapis.com/css?family=Merriweather:400,400italic,700' rel='stylesheet' type='text/css'>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="astro.js"></script>
     <script type="text/javascript" src="lib/d3.js"></script>
-    <script type="text/javascript">
+    <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [['$','$'], ['\\(','\\)']],
     processEscapes: true
   },
   TeX: {
-      extensions: ["color.js"]
+    equationNumbers: { autoNumber: "AMS" },      
+    extensions: ["color.js"]
   }
 });
     </script>
+    <script type="text/javascript" src="/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
 </head>
 
 <body>
@@ -92,37 +94,64 @@ MathJax.Hub.Config({
     </header>
     <div class="container">
         <div class="row">
-        <div class="nine columns">
-            <h4>Velocity components</h4>
-            <p> <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
-                Let’s now investigate the velocity of a satellite in its orbit. To define the direction, it is useful to decompose the <span class="v">velocity vector</span> in two orthogonal components in our polar coordinate system. The <span class="vr">radial velocity</span> tells us how fast the satellite is moving towards or away from the Earth, while the <span class="vn">normal velocity</span> tells us how fast the satellite is moving
-                in the horizontal plane.
-            </p>
-            <p>
-                When the <i>flight path angle</i>, $\gamma$, is introduced, the <span class="vr">radial</span> and <span class="vn">normal</span> components of the <span class="v">velocity</span> can be expressed as:
-                $${\color{vr}V_r} = {\color{vr}\dot{r}} = {\color{velocity}V} \sin \gamma$$
-                $${\color{vn}V_\theta} = {\color{vn}r\dot{\theta}} = {\color{velocity}V} \cos \gamma$$
-                $$H = r {\color{velocity}V} \cos \gamma$$
-            </p>
-            <p>
-                We would now like to find expressions for these velocity components in terms of the position angle in the orbit $\theta$. Differentation of (5.22) to time yields the desired expression for the radial velocity component:
-                $${\color{vr}\dot{r}} = \frac{(H^2/\mu)e\dot\theta\sin\theta}{(1+e\cos\theta)^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin\theta$$
-                The expression for the normal velocity component follows directly from (5.7) and (5.22):
-                $${\color{vn}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos \theta )$$
-<!--
-                From (5.23), (5.24), (5.26) and (5.27) we obtain for the flight path angle:
-                $$\tan \gamma = \frac{\color{red}\dot{r}}{\color{blue}r\dot{\theta}} = \frac{e \sin\theta}{1+e\cos\theta}$$
--->
-<!--
-                Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
+            <div class="nine columns">
+                <h4>Velocity components</h4>
+                <p> <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
+                    In the previous section, we derived the equation for the shape of a satellite orbit from the differential equations of motion for the Two-Body Problem. We found The resulting equation matches the formula for a conic section in the polar coordinate system $r$ and ${\color{purple}\theta}$, where $p$ and $e$ are integration constants that will have to be set based on initial conditions.
+                    \begin{equation}
+                        r = \frac{p}{1+e\cos{\color{purple}\theta}}
+                        \label{eq:conicsectionpolar}
+                    \end{equation}
+                </p>
+                <div id="conic_section_polar"></div>
+                <script type="text/javascript" src="js/conic_section_polar.js"></script>                
+            </div>
+        </div>
+        <div class="row">
+            <div class="nine columns">
+                <p>
+                    Let’s now investigate the velocity of a satellite in its orbit. To define the direction, it is useful to decompose the <span class="v">velocity vector</span> in two orthogonal components in our polar coordinate system. The <span class="vr">radial velocity</span> tells us how fast the satellite is moving towards or away from the Earth, while the <span class="vn">normal velocity</span> tells us how fast the satellite is moving
+                    in the horizontal plane.
+                </p>
+                <p>
+                    When the <i>flight path angle</i>, $\gamma$, is introduced, the <span class="vr">radial</span> and <span class="vn">normal</span> components of the <span class="v">velocity</span> can be expressed as:
+                    \begin{equation}
+                        {\color{vr}V_r} = {\color{vr}\dot{r}} = {\color{velocity}V} \sin {\color{green}\gamma}
+                        \label{eqn:vr}
+                    \end{equation}
+                    \begin{equation}
+                        {\color{vn}V_\theta} = {\color{vn}r\dot{\theta}} = {\color{velocity}V} \cos {\color{green}\gamma}
+                        \label{eqn:vn}
+                    \end{equation}
+                    \begin{equation}
+                        H = r {\color{velocity}V} \cos {\color{green}\gamma}
+                    \end{equation}
+                </p>
+                <p>
+                    We would now like to find expressions for these velocity components in terms of the position angle in the orbit $\theta$. Differentation of \eqref{eq:conicsectionpolar} to time yields the desired expression for the radial velocity component:
+                    \begin{equation}
+                        {\color{vr}\dot{r}} = \frac{(H^2/\mu)e\dot{\color{purple}\theta}\sin{\color{purple}\theta}}{(1+e\cos{\color{purple}\theta})^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin {\color{purple}\theta}
+                        \label{eqn:vr2}
+                    \end{equation}
+                    The expression for the normal velocity component follows directly from (5.7) and (5.22):
+                    \begin{equation}
+                        {\color{vn}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos {\color{purple}\theta} )
+                        \label{eqn:vn2}
+                    \end{equation}
     
-                $$ \frac{d^2\vec{r}_{ki}}{dt^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
-                
-                where the index \(ki\) indicates that the motion of body \(i\)...
-            </p>
--->
+                    From \eqref{eqn:vr}, \eqref{eqn:vn}, \eqref{eqn:vr2} and \eqref{eqn:vn2} we obtain for the flight path angle:
+                    $$\tan \gamma = \frac{\color{red}\dot{r}}{\color{blue}r\dot{\theta}} = \frac{e \sin{\color{purple}\theta}}{1+e\cos{\color{purple}\theta}}$$
+    <!--
+                    Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
+        
+                    $$ \frac{d^2\vec{r}_{ki}}{dt^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
+                    
+                    where the index \(ki\) indicates that the motion of body \(i\)...
+                </p>
+    -->
             </div>
             <div class="three columns sidenote">
+                Test of sidenote.
             </div>
         </div>
     
@@ -150,6 +179,7 @@ MathJax.Hub.Config({
             </div>
         </div>
         <script type="text/javascript" src="js/orbit_velocity_components.js"></script>
+
         <div class="row">
             <div class="nine columns">
                 <p>
