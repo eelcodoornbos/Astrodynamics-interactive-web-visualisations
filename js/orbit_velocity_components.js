@@ -113,7 +113,6 @@ var viewController = {
 
         viewOrbit.init();
         viewHodograph.init();
-        console.log(parseInt(model.numSteps*0.6));
     },
     startStopAnimation: function startStopAnimation() {
         if (viewController.animationRunning) 
