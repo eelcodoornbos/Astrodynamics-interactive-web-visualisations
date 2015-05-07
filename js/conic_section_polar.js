@@ -27,49 +27,55 @@ function sign(x){return x>0?1:x<0?-1:x;}
 var CONIC_SECTION_POLAR = (function() {
 
 var model = {
-    
-    eccentricity: 0.7,
-    perigeeHeight: 500,
+    centralBody: astro.earth,
+    eccentricity: 0.88,
+    semiLatusRectum: 6378+10000,
     numSteps: 360,
-    maxCoordinate: 50000,
+    maxCoordinate: 100000,
     currentData: {theta: 30*Math.PI/180},
     twoBodyData: [],
     
     init: function model_init() {
-        var trueAnomaly, minTrueAnomaly, maxTrueAnomaly;
-        model.keplerOrbit = new astro.KeplerOrbit(astro.earth, model.perigeeHeight, model.eccentricity);
+        var trueAnomaly;
+        // Compute the minimum and maximum true anomaly
         if (model.eccentricity < 1) {
             model.minTrueAnomaly = -1 * Math.PI;
             model.maxTrueAnomaly = +1 * Math.PI;
         } else {
-            model.maxTrueAnomaly = Math.acos(-1/model.eccentricity)/1.00001;
-            model.minTrueAnomaly = -1 * Math.acos(-1/model.eccentricity)/1.00001;
+            model.maxTrueAnomaly = Math.acos(-1/model.eccentricity)/1.001;
+            model.minTrueAnomaly = -1 * Math.acos(-1/model.eccentricity)/1.001;
         }
 
+
+        // Compute the orbit trajectory
         for (i=0; i< model.numSteps; i++)
         {
-            var trueAnomaly = model.minTrueAnomaly + (i / model.numSteps) * (model.maxTrueAnomaly - model.minTrueAnomaly);
+            trueAnomaly = model.minTrueAnomaly + (i / model.numSteps) * (model.maxTrueAnomaly - model.minTrueAnomaly);
             model.twoBodyData[i] = {};
             model.twoBodyData[i].theta = trueAnomaly;
-            model.twoBodyData[i].r = model.keplerOrbit.semiLatusRectum / (1 + model.keplerOrbit.eccentricity * Math.cos(model.twoBodyData[i].theta));
+            model.twoBodyData[i].r = model.semiLatusRectum / (1 + model.eccentricity * Math.cos(model.twoBodyData[i].theta));
             model.twoBodyData[i].x = model.twoBodyData[i].r * Math.cos(model.twoBodyData[i].theta);
             model.twoBodyData[i].y = model.twoBodyData[i].r * Math.sin(model.twoBodyData[i].theta);
         }
-        model.xMin = d3.min(model.twoBodyData, function(d) { return d.x;} );
-        model.xMax = d3.max(model.twoBodyData, function(d) { return d.x;} );
-        model.yMin = d3.min(model.twoBodyData, function(d) { return d.y;} );
-        model.yMax = d3.max(model.twoBodyData, function(d) { return d.y;} );
-        if (model.xMin < -model.maxCoordinate) { model.xMin = -model.maxCoordinate; model.xMax = model.maxCoordinate; }
-        if (model.yMax > model.maxCoordinate/2) { model.yMax = model.maxCoordinate/2; model.yMin = -model.maxCoordinate/2; }
+        
+        // Compute the position of the current point
         model.computeCurrentDataFromTrueAnomaly(model.currentData.theta);
+
+        // Compute the perigee height
+        model.perigeeHeight = model.semiLatusRectum * (1-model.eccentricity) / (1-Math.pow(model.eccentricity,2));
+
+        // Set the minimum and maximum distances for scaling the plot
+        model.yMin = -30000; model.yMax = 30000;
+        model.xMin = -150000; model.xMax = 25000;
+
     },
     computeCurrentDataFromTrueAnomaly: function(trueAnomaly)
     {
         if (trueAnomaly < model.minTrueAnomaly) { trueAnomaly = model.minTrueAnomaly; }
         if (trueAnomaly > model.maxTrueAnomaly) { trueAnomaly = model.maxTrueAnomaly; }
         model.currentData.theta = trueAnomaly;
-        model.currentData.r =  model.keplerOrbit.semiLatusRectum / 
-            (1 + model.keplerOrbit.eccentricity * Math.cos(model.currentData.theta));
+        model.currentData.r =  model.semiLatusRectum / 
+            (1 + model.eccentricity * Math.cos(model.currentData.theta));
         model.currentData.x = model.currentData.r * Math.cos(model.currentData.theta);
         model.currentData.y = model.currentData.r * Math.sin(model.currentData.theta);        
     }
@@ -90,7 +96,7 @@ var viewController = {
     margin: { top: 40, right: 40, bottom: 40, left: 40 },
     arrowLength: 5,
     arrowWidth: 3,
-    aspectRatio: 1.78,
+    aspectRatio: 1.77,
     defaultVectorStrokeWidth: 3,
     trueAnomalyColor: "purple",
     radiusColor: "darkcyan",
@@ -165,14 +171,16 @@ var viewController = {
         viewController.trueAnomalyValue = viewController.trueAnomalyLabel
             .append("span")
             .attr("id","trueAnomalyValue");
+        viewController.radiusValue = viewController.trueAnomalySliderDiv.append("span")
+            .attr("id","radiusValue");          
         viewController.eccentricitySliderDiv = viewController.container.append("div")
             .attr("float","left");
         viewController.eccentricitySlider = viewController.eccentricitySliderDiv.append("input")        
             .attr("id","eccentricityslider")
             .attr("type","range")
             .attr("min","0")
-            .attr("max","2")
-            .attr("step","0.05")
+            .attr("max","4")
+            .attr("step","0.01")
             .style("width",300)
             .property("value",model.eccentricity)
             .on("input",function(){
@@ -190,19 +198,19 @@ var viewController = {
             .html("$e = $")
             .append("span")
             .attr("id","eccentricityValue");            
-        viewController.perigeeSliderDiv = viewController.container.append("div")
+        viewController.semiLatusRectumSliderDiv = viewController.container.append("div")
             .attr("float","right");
-        viewController.perigeeSlider = viewController.perigeeSliderDiv.append("input")
-            .attr("id","perigeeslider")
+        viewController.semiLatusRectumSlider = viewController.semiLatusRectumSliderDiv.append("input")
+            .attr("id","semilatusrectumslider")
             .attr("type","range")
             .attr("min","0")
-            .attr("max","36000")
+            .attr("max","50000")
             .attr("step","100")
             .style("width","300")
-            .property("value",model.perigeeHeight)
+            .property("value",model.semiLatusRectum)
             .on("input",function(){
                 var positionInOrbit = viewController.frame / model.numSteps;
-                model.perigeeHeight = parseFloat(viewController.perigeeSlider.property("value")); 
+                model.semiLatusRectum = parseFloat(viewController.semiLatusRectumSlider.property("value")); 
                 model.init();
                 viewOrbit.setOrbitPlotGeometry();
                 if (true) {
@@ -211,7 +219,10 @@ var viewController = {
                 viewOrbit.updateOrbit();
                 viewOrbit.updateSatellitePosition(); 
             } );
-            
+        viewController.semiLatusRectumLabel = viewController.semiLatusRectumSliderDiv.append("div")
+            .html("$p = $")
+            .append("span")
+            .attr("id","semiLatusRectumValue");        
     },
     scaleArrowStyle: function scaleArrowStyle(element,length) {
         // Scales down the linewidth of a vector 
@@ -264,12 +275,6 @@ var viewOrbit = {
         } 
         viewOrbit.graph
             .attr("transform", "translate(" + viewController.margin.left + "," + viewController.margin.top + ")")
-            .append("rect")
-                .style("visibility","hidden")
-                .attr("x",0)
-                .attr("y",0)
-                .attr("width",viewController.plotWidth)
-                .attr("height",viewController.plotHeight);
     },
     setScale: function setScale() {
         viewOrbit.xScale = d3.scale.linear().range([0,  viewController.plotWidth]).domain([model.xMin,model.xMax]);
@@ -280,6 +285,11 @@ var viewOrbit = {
         viewOrbit.velocityScale = 200/16;
     },
     addOrbit: function() {
+        // Hidden rectangle to click on
+        viewOrbit.hiddenRect = viewOrbit.graph.append("rect")
+                .style("visibility","hidden")
+                .attr("x",0)
+                .attr("y",0)       
         // Central body
         viewOrbit.centralBody = viewOrbit.graph.append("circle")
         	.attr("id","earth")
@@ -303,6 +313,12 @@ var viewOrbit = {
     },
     addSatellite: function() {
         viewOrbit.satellite = viewOrbit.graph.append("g");
+        viewOrbit.satCircle = viewOrbit.satellite.append("circle")
+            .attr("id","satcircle")
+    		.attr("fill","black")
+    		.attr("stroke","white")
+    		.attr("stroke-width","2px")
+    		.attr("r",5);
         viewOrbit.satRadius = viewOrbit.graph.append("line")
             .attr("id","satradius")
             .style("stroke",viewController.radiusColor)
@@ -316,12 +332,6 @@ var viewOrbit = {
             .attr("opacity","0.3")
             .attr("stroke",viewController.trueAnomalyColor)
             .attr("stroke-width","4");
-        viewOrbit.satCircle = viewOrbit.satellite.append("circle")
-            .attr("id","satcircle")
-    		.attr("fill","gray")
-    		.attr("stroke","white")
-    		.attr("stroke-width","1px")
-    		.attr("r",5);
 /*
         viewOrbit.trueAnomalyValueLabel = viewOrbit.satellite.append("text")
             .attr("id","trueanomalyvalue")
@@ -356,22 +366,30 @@ var viewOrbit = {
         viewOrbit.updateSatellitePosition();
     },
     updateSatellitePosition: function updateSatellitePosition(angle) {
-        viewOrbit.satCircle
-            .attr("cx",viewOrbit.xScale(model.currentData.x))
-            .attr("cy",viewOrbit.yScale(model.currentData.y));
         viewOrbit.satRadius
             .attr("x1",viewOrbit.xScale(0))
             .attr("y1",viewOrbit.yScale(0))
             .attr("x2",viewOrbit.xScale(model.currentData.x))
             .attr("y2",viewOrbit.yScale(model.currentData.y));
+        viewOrbit.satCircle
+            .attr("cx",viewOrbit.xScale(model.currentData.x))
+            .attr("cy",viewOrbit.yScale(model.currentData.y));
         var trueAnomaly = model.currentData.theta;
         if (trueAnomaly < 0) { trueAnomaly += Math.PI * 2;}
         viewOrbit.trueanomaly
-            .attr("d",anglesToArcPath(viewOrbit.xScale,viewOrbit.yScale,0,0,6378/3,0,trueAnomaly,0,0));
+            .attr("d",anglesToArcPath(viewOrbit.xScale,viewOrbit.yScale,0,0,6378/3*2,0,trueAnomaly,0,0));
+        if (model.currentData.theta < 0)
+        {
+            annot = (model.currentData.theta*180/Math.PI+360).toFixed(0) + "º (" + (model.currentData.theta*180/Math.PI).toFixed(0) + "º)";
+        } else {
+            annot = (model.currentData.theta*180/Math.PI).toFixed(0) + "º";
+        }
         viewController.trueAnomalyValue
-            .html((model.currentData.theta*180/Math.PI).toFixed(0) + "º");
+            .html(annot);
         viewController.trueAnomalySlider
             .property("value",parseFloat(model.currentData.theta*180/Math.PI));
+        viewController.radiusValue
+            .html("r = " + (model.currentData.r).toFixed(0) + " km");            
 /*
         viewOrbit.trueAnomalyValueLabel
             .attr("x",viewOrbit.xScale(model.currentData.x/2))
@@ -381,13 +399,18 @@ var viewOrbit = {
 
     },    
     updateOrbit: function() {
+        viewOrbit.hiddenRect
+                .attr("width",viewController.plotWidth)
+                .attr("height",viewController.plotHeight);    
         viewController.eccentricityLabel
-            .html(model.eccentricity.toFixed(2));        
+            .html(" " + model.eccentricity.toFixed(2));
+        viewController.semiLatusRectumLabel
+            .html(model.semiLatusRectum.toFixed(0) + " km");                   
         d3.select("#rp").html(model.perigeeHeight.toFixed(1));
         viewOrbit.centralBody
             .attr("cx",viewOrbit.xScale(0))
         	.attr("cy",viewOrbit.yScale(0))
-        	.attr("r",viewOrbit.plotScale*model.keplerOrbit.centralBody.radius);
+        	.attr("r",viewOrbit.plotScale*model.centralBody.radius);
         viewOrbit.xAxis
             .attr("x1",viewOrbit.xScale(model.xMin)-viewController.marginMin.left)
             .attr("y1",viewOrbit.yScale(0))
@@ -398,13 +421,23 @@ var viewOrbit = {
             .attr("y1",viewOrbit.yScale(model.yMin)+viewController.marginMin.top)
             .attr("x2",viewOrbit.xScale(0))
             .attr("y2",viewOrbit.yScale(model.yMax)-viewController.marginMin.top);
-        viewOrbit.orbit
-            .attr("d",viewOrbit.orbitLineFunction(model.twoBodyData));
+        if (model.eccentricity < 1)
+        {
+            viewOrbit.orbit.attr("d",viewOrbit.orbitLineFunction(model.twoBodyData) + "Z");
+        } else {
+            viewOrbit.orbit.attr("d",viewOrbit.orbitLineFunction(model.twoBodyData));            
+        }
     },
+    orbitLineFunction: d3.svg.line()
+                    .x( function (d) { return (viewOrbit.xScale(d.x)); } )
+                    .y( function (d) { return (viewOrbit.yScale(d.y)); } )  
+}    
+/*
     orbitLineFunction: d3.svg.line()
                 .x( function (d) { return (viewOrbit.xScale(d.x)); } )
                 .y( function (d) { return (viewOrbit.yScale(d.y)); } )
-    };
+}
+*/
 
     controller.init();
 
