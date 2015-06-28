@@ -5,7 +5,7 @@
 
     <title>Astrodynamics</title>
     <link rel="stylesheet" type="text/css" href="css/skeleton.css"/>
-
+    <link rel="stylesheet" type="text/css" href="css/astro_d3.css"/>
     <link href='http://fonts.googleapis.com/css?family=Merriweather:400,400italic,700' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="astro.js"></script>
     <script type="text/javascript" src="lib/d3.js"></script>
@@ -98,14 +98,27 @@ MathJax.Hub.Config({
                 <h4>Velocity components</h4>
                 <p> <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
                     In the previous section, we derived the equation for the shape of a satellite orbit from the differential equations of motion for the Two-Body Problem. We found The resulting equation matches the formula for a conic section in the polar coordinate system $r$ and ${\color{purple}\theta}$, where $p$ and $e$ are integration constants that will have to be set based on initial conditions.
+\begin{equation}
+                        r = \frac{p}{1+e\cos{\theta}} 
+\end{equation}
+
+<script type="math/tex; mode=display" id="foo">
                     \begin{equation}
-                        r = \frac{p}{1+e\cos{\color{purple}\theta}}
+                        r = \frac{\color{blue}p}{1+e\cos{\color{purple}\theta}} = \frac{\color{blue}\class{semilatusrectumvalue}{80000}}{1+\class{eccentricityvalue}{2.00}\cos\class{trueanomalyvalue}{\color{purple}-180º}} = \class{radiusvalue}{\color{red}500000}
                         \label{eq:conicsectionpolar}
                     \end{equation}
+</script>
                 </p>
-                <div id="conic_section_polar"></div>
-                <script type="text/javascript" src="js/conic_section_polar.js"></script>                
             </div>
+        </div>
+        <div class="row">
+            <div class="nine columns">                
+                <div id="conic_section_polar"></div>
+            </div>
+            <div class="three columns">
+                <div id="conic_section_polar_controls"></div>
+            </div>
+            <script type="text/javascript" src="js/conic_section_polar.js"></script>                        
         </div>
         <div class="row">
             <div class="nine columns">
@@ -151,34 +164,19 @@ MathJax.Hub.Config({
     -->
             </div>
             <div class="three columns sidenote">
-                Test of sidenote.
+<!--                 Test of sidenote. -->
             </div>
         </div>
     
         <div class="row">
             <div class = "nine columns">
-                <div id="orbit_velocity_components"></div>
+                <div id="conic_section_velocity_components"></div>
             </div>
             <div class = "three columns">
-                <b>Orbit parameters:</b></br>
-                <div id="rp_slider"></div>
-                $r_p = $ <span id="rp"></span> km</br>
-                <div id="e_slider"></div>
-                $e = $ <span id="e"></span></br>
-                </br>
-                <b>Velocity:</b></br>
-                ${\color{velocity}V} = $ <span id="v"></span> km/s</br>
-                ${\color{vr}V_r} =$ <span id="vr"></span> km/s</br>
-                ${\color{vn}V_\theta} =$ <span id="vtheta"></span> km/s</br>
-                </br>
-                <b>Time:</b>
-                <div id="orbit_velocity_components_controls"></div>
-                $t-t_p = $ <span id="t"></span> h</br>
-                <div id="time_slider"></div>
-
+                <div id="conic_section_velocity_components_controls"</div>
             </div>
         </div>
-        <script type="text/javascript" src="js/orbit_velocity_components.js"></script>
+        <script type="text/javascript" src="js/conic_section_velocity_components.js"></script>
 
         <div class="row">
             <div class="nine columns">

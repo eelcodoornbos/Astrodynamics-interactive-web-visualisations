@@ -8,6 +8,7 @@ astro = (function() {
 	}
 	
 	myobject.earth = new CentralBody(398600.44189, 6378.1);
+	myobject.mars = new CentralBody( 42823.1, 3390.0);
 	// myobject.moon = ...
 	// myobject.jupiter = ..., etc.
 	

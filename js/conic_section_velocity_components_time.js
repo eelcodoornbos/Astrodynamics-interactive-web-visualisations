@@ -53,7 +53,7 @@ var ORBIT_VELOCITY_COMPONENTS = (function() {
 var model = {
     
     eccentricity: 0.6,
-    perigeeHeight: 500,
+    perigeeHeight: 200,
     framesPerSecond: 60,
     simulationTimeDuration: 10,
 
@@ -136,6 +136,7 @@ var viewController = {
                 viewController.frame = 0; 
             }
             var currentData = model.twoBodyData[viewController.frame];
+            console.log(currentData.v)
             viewOrbit.updateSatellitePosition(currentData);
             viewHodograph.updateSatellitePosition(currentData);
             viewController.frameSlider.property("value",viewController.frame);
@@ -581,7 +582,7 @@ var viewHodograph = {
             .attr("stroke-width","1px")              
             .attr("cx",viewHodograph.xScale(0))
             .attr("r",4)
-            .style("visibility","hidden");             
+            .style("visibility","visible");             
         viewHodograph.hodographOrigin = viewHodograph.graph.append("circle")
             .attr("id","satcircle")
     		.attr("fill","gray")

@@ -1,0 +1,114 @@
+.semilatusrectum::-webkit-slider-thumb {
+    background: blue;
+}
+
+
+.eccentricity::-webkit-slider-thumb {
+    background: gray;
+}
+
+/* Angles */
+
+path.trueAnomaly {
+    stroke: purple;
+    stroke-width: 4px;
+    fill: none;
+    opacity: 0.5;
+}
+input.trueAnomaly::-webkit-slider-thumb {
+    background: purple;
+    opacity: 0.5;
+}    
+.sliderAnnotation.trueAnomaly {
+    color: purple;
+}
+
+path.flightPathAngle {
+    stroke: green;
+    stroke-width: 4px;
+    fill: none;
+    opacity: 0.5;
+}
+
+/* Vectors */
+line.velocity {
+    stroke: orange;
+    stroke-width: 3px;
+    marker-end: url('#velocityArrowHead');
+}
+#velocityArrowHead {
+    fill: orange;
+}
+
+line.normalVelocity {
+    stroke: red;
+    stroke-width: 3px;
+    marker-end: url('#normalVelocityArrowHead');
+}
+#normalVelocityArrowHead {
+    fill: red;
+}
+
+line.radialVelocity {
+    stroke: blue;
+    stroke-width: 3px;
+    marker-end: url('#radialVelocityArrowHead');
+}
+#radialVelocityArrowHead {
+    fill: blue;
+}
+
+line.velocityHelper {
+    stroke: gray;
+    stroke-width: 2px;
+    stroke-dasharray: 3, 2;    
+    opacity: 0.5;
+}
+
+line.satRadius {
+    stroke: gray;
+    stroke-width: 3px;
+    opacity: 0.4;
+}
+
+.hodographCircle {
+    fill: none;
+    stroke: orange;
+    stroke-width: 3px;
+    stroke-dasharray: 5,5;
+    opacity: 0.5;
+    clip-path: url("#cliphodograph");
+}
+
+.circularVelocity {
+    fill: red;
+    stroke: white;
+    stroke-width: 1px;
+}
+
+.satCircle {
+    fill: gray;
+    stroke: white;
+    stroke-width: 1px;
+}
+
+.centralBody {
+    fill: #eee;
+    stroke: #ddd;
+}
+
+.orbitAxis {
+    stroke: gray;
+    opacity: 0.5;
+    stroke-width: 0.5px;
+}
+
+.orbit {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.axis text {
+    font-size: 8pt;
+}
