@@ -9,6 +9,8 @@
     <link href='http://fonts.googleapis.com/css?family=Merriweather:400,400italic,700' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="astro.js"></script>
     <script type="text/javascript" src="lib/d3.js"></script>
+    <script type="text/javascript" src="js/astro_d3_utility.js"></script>
+
     <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   tex2jax: {
@@ -96,7 +98,8 @@ MathJax.Hub.Config({
         <div class="row">
             <div class="nine columns">
                 <h4>Velocity components</h4>
-                <p> <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
+                <p>
+                    <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
                     In the previous section, we derived the equation for the shape of a satellite orbit from the differential equations of motion for the Two-Body Problem. We found The resulting equation matches the formula for a conic section in the polar coordinate system $r$ and ${\color{purple}\theta}$, where $p$ and $e$ are integration constants that will have to be set based on initial conditions.
 \begin{equation}
                         r = \frac{p}{1+e\cos{\theta}} 
