@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 
     <title>Astrodynamics</title>
+    <link rel="stylesheet" type="text/css" href="css/skeleton.css"/>
     <link rel="stylesheet" type="text/css" href="css/astro_d3.css"/>
     <link href='http://fonts.googleapis.com/css?family=Merriweather:400,400italic,700' rel='stylesheet' type='text/css'>
-    <script type="text/javascript" src="lib/d3.js"></script>
     <script type="text/javascript" src="astro.js"></script>
+    <script type="text/javascript" src="lib/d3.js"></script>
     <script type="text/javascript" src="js/astro_d3_utility.js"></script>
 
     <script type="text/x-mathjax-config">
@@ -26,11 +27,211 @@ MathJax.Hub.Config({
     
 </head>
 
-<body>    
-        <div id="conic_section_velocity_components" style="width: 80%; float: left;"></div>
-        <div id="conic_section_velocity_components_controls" style="max-width: 200px; float: right;"></div>
+<body>
+    <header>
+        <div class="title">
+            <div class="container">
+                <div class="row">
+                    <div class="nine columns">
+                        <h1>Astrodynamics explained</h1>
+                        <p>                        by Eelco Doornbos,
+                        based on “Fundamentals of Astrodynamics”
+                        by Karel Wakker
+                        </p>
+                    </div>
+                    <div class="three columns">
+                        <img class="tudelftlogo" src="img/tudelftlogo.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contents">
+            <div class="container">
+                <div class="row" id="menu">
+<!--
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Two body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Conservation laws</li>
+                            <li>Shape of the orbit</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                    </div>
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Three body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Circular restricted</li>
+                            <li>Lagrange points</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                        </ul>
+                    </div>
+                    <div class="three columns">
+                        <ul class="toc">
+                            <li>Three body problem</li>
+                            <li>Equation of motion</li>
+                            <li>Circular restricted</li>
+                            <li>Lagrange points</li>
+                            <li>Conic sections</li>
+                            <li>Kepler's laws</li>
+                            <li><a href="velocitycomponents.html">Velocity components</a></li>
+                            <li>Eccentricity vector</li>
+                        </ul>
+                    </div>
+                    <div class="three columns colophon">
+                        by Eelco Doornbos,
+                        based on "Fundamentals of Astrodynamics"
+                        by Karel Wakker
+                    </div>                
+-->
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="row">
+            <div class="nine columns">
+                <h4>Velocity components</h4>
+                <p>
+                    <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
+                    Let’s now investigate the velocity of a satellite in its orbit. To define the direction, it is useful to decompose the <span class="v">velocity vector</span> in two orthogonal components in our polar coordinate system. The <span class="vr">radial velocity</span> tells us how fast the satellite is moving towards or away from the Earth, while the <span class="vn">normal velocity</span> tells us how fast the satellite is moving
+                    in the horizontal plane.
+                </p>
+                <p>
+                    When the <i>flight path angle</i>, $\gamma$, is introduced, the <span class="vr">radial</span> and <span class="vn">normal</span> components of the <span class="v">velocity</span> can be expressed as:
+                    \begin{equation}
+                        {\color{vr}V_r} = {\color{vr}\dot{r}} = {\color{velocity}V} \sin {\color{green}\gamma}
+                        \label{eqn:vr}
+                    \end{equation}
+                    \begin{equation}
+                        {\color{vn}V_\theta} = {\color{vn}r\dot{\theta}} = {\color{velocity}V} \cos {\color{green}\gamma}
+                        \label{eqn:vn}
+                    \end{equation}
+                    \begin{equation}
+                        H = r {\color{velocity}V} \cos {\color{green}\gamma}
+                    \end{equation}
+                </p>
+                <p>
+                    We would now like to find expressions for these velocity components in terms of the position angle in the orbit $\theta$. Differentation of \eqref{eq:conicsectionpolar} to time yields the desired expression for the radial velocity component:
+                    \begin{equation}
+                        {\color{vr}\dot{r}} = \frac{(H^2/\mu)e\dot{\color{purple}\theta}\sin{\color{purple}\theta}}{(1+e\cos{\color{purple}\theta})^2} = r^2\dot\theta \frac{\mu e}{H^2}\sin\theta = \frac{\mu}{H}e \sin {\color{purple}\theta}
+                        \label{eqn:vr2}
+                    \end{equation}
+                    The expression for the normal velocity component follows directly from (5.7) and (5.22):
+                    \begin{equation}
+                        {\color{vn}r\dot{\theta}} = \frac{H}{r} = \frac{\mu}{H} ( 1 + e \cos {\color{purple}\theta} )
+                        \label{eqn:vn2}
+                    \end{equation}
+    
+                    From \eqref{eqn:vr}, \eqref{eqn:vn}, \eqref{eqn:vr2} and \eqref{eqn:vn2} we obtain for the flight path angle:
+                    $$\tan \gamma = \frac{\color{red}\dot{r}}{\color{blue}r\dot{\theta}} = \frac{e \sin{\color{purple}\theta}}{1+e\cos{\color{purple}\theta}}$$
+    <!--
+                    Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
+        
+                    $$ \frac{d^2\vec{r}_{ki}}{dt^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
+                    
+                    where the index \(ki\) indicates that the motion of body \(i\)...
+                </p>
+    -->
+            </div>
+            <div class="three columns sidenote">
+<!--                 Test of sidenote. -->
+            </div>
+        </div>
+    
+        <div class="row">
+            <div class = "five columns">
+                <div id="conic_section_velocity_components_orbit" class="svg-container"></div>
+                <div id="conic_section_velocity_components_hodograph" class="svg-container"></div>
+            </div>
+            <div class = "four columns">
+                <div id="conic_section_velocity_components_lines" class="svg-container"></div>
+                <div id="conic_section_flightpathangle" class="svg-container"></div>
+            </div>
+            <div class = "three columns">
+                <div id="conic_section_velocity_components_controls"</div>
+            </div>
+        </div>
         <script type="text/javascript" src="js/conic_section_velocity_components.js"></script>
+        <script type="text/javascript">
 
+            model.init();
+
+            function updateGraphs() {
+               d3.select("#conic_section_velocity_components_orbit").datum(model).call(orbitChart);
+               d3.select("#conic_section_velocity_components_hodograph").datum(model).call(hodographChart);
+               d3.select("#conic_section_velocity_components_lines").datum(model.twoBodyData).call(lineChart);
+               d3.select("#conic_section_flightpathangle").datum(model.twoBodyData).call(lineChart2);
+            }
+            
+            var orbitControls = conicSectionInputOutput()
+                .graphSetPrefix("conic_section_velocity_components");
+            d3.select("#conic_section_velocity_components_controls").datum(model).call(orbitControls);
+            
+            var orbitChart = conicSectionOrbit()
+                .showSemiLatusRectum(false)
+                .showVelocity(true)
+                .showNormalRadialVelocity(true)
+                .showHodographCircle(false)
+                .showFlightPathAngle(true)
+                .canvasWidth(400)
+                .canvasHeight(300)
+                .velocityScale(150/16);
+
+            var hodographChart = conicSectionHodograph()
+                .canvasWidth(250)
+                .canvasHeight(300);
+
+            var lineChart = conicSectionLines()
+                .canvasWidth(300)
+                .canvasHeight(300)
+                .ranges( { xmin: -180, xmax: +180, ymin: -15, ymax: +15 } );
+
+            var lineChart2 = conicSectionLines()
+                .canvasWidth(300)
+                .canvasHeight(300)
+                .plotVariables([{xAxisVariable: "trueAnomaly",
+                                 xAxisScaleFactor: 180/Math.PI,
+                                 yAxisVariable: "flightPathAngle",
+                                 yAxisScaleFactor: 180/Math.PI}])
+                .yAxisLabel("Flight path angle (deg)")
+                .ranges( { xmin: -180, xmax: +180, ymin: -90, ymax: +90 } )
+                .yTickValues([-90,-60,-30,30,60,90]);
+
+            
+            updateGraphs();
+        </script>
+
+        <div class="row">
+            <div class="nine columns">
+                <p>
+<!--
+                    Equation (4.4) describes the motion of body \(i\) with respect to a non-rotating reference frame with body \(k\) as origin, under the influence of all gravitational forces between the bodies \(i\), \(j\) and \(k\). In Section 4.2, it was shown that for the motion of the Earth about the Sun and of satellites about the Earth (and about other planets) in first-order approximation the effects of the gravitational attraction between the bodies \(j\) and \(i\) can be neglected with respect to the effect of the gravitational attraction between the bodies \(i\) and \(k\). In that case, the relative motion of body \(i\) is to good approximation described by
+        
+                    $$ \frac{\mathrm{d}^2\vec{r}_{ki}}{\mathrm{d}t^2} = -G \frac{m_k+m_i}{r_{ki}^3}\vec{r}_{ki}$$
+                    
+                    where the index \(ki\) indicates that the motion of body \(i\)...
+-->
+                </p>
+            </div> <!-- nine columns -->
+        </div> <!-- row -->
+    
+    </div> <!-- container -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="twelve columns">
+
+                </div>
+            </div>
+    </footer>
+    <script type="text/javascript" src="js/menu.js"></script>
 </body>
 
 

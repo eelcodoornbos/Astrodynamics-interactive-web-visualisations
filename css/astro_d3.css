@@ -1,9 +1,26 @@
+/*
+svg {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+div.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    vertical-align: middle;
+    overflow: hidden;
+}
+*/
+
 .axis path,
 .axis line {
     fill: none;
-    stroke: black;
+    stroke: lightgray;
     stroke-width: 1px;
-    shape-rendering: crispEdges;
 }
 
 /* Slider */
@@ -62,6 +79,7 @@ path.trueAnomaly {
     fill: purple;
     opacity: 0.3;
 }
+
 input.trueAnomaly::-webkit-slider-thumb {
     background: purple;
     opacity: 0.5;
@@ -69,7 +87,11 @@ input.trueAnomaly::-webkit-slider-thumb {
 .sliderAnnotation.trueAnomaly {
     color: purple;
 }
-
+line.semiLatusRectum {
+    stroke: darkcyan;
+    stroke-width: 3px;
+    opacity: 0.5;
+}
 input.semiLatusRectum::-webkit-slider-thumb {
     background: darkcyan;
     opacity: 0.5;
@@ -78,23 +100,52 @@ input.semiLatusRectum::-webkit-slider-thumb {
     color: darkcyan;
 }
 
-path.flightPathAngle {
-    stroke: none;
-    fill: green;
-    opacity: 0.3;
-}
 .flightPathAngle {
     color: green;
 }
+line.flightPathAngle {
+    stroke: green;
+}
+path.flightPathAngle {
+    fill: green;
+    stroke: none;
+    opacity: 0.5;
+}
+rect.flightPathAngle {
+    stroke: green;
+}
+/*
+path.flightPathAngle.line {
+    fill: none;
+    stroke: green;
+    opacity: 0.5;
+}
+*/
 
 /* Vectors */
+line.acceleration {
+    stroke: gray;
+    stroke-width: 3px;
+}
+
+.velocity {
+    color: orange;
+}
 line.velocity {
     stroke: orange;
     stroke-width: 3px;
     marker-end: url('#velocityArrowHead');
 }
-.velocity {
-    color: darkorange;
+
+line.velocity {
+    stroke: orange;
+}
+path.velocity {
+    fill: none;
+    stroke: orange;
+}
+rect.velocity {
+    stroke: orange;
 }
 #velocityArrowHead {
     fill: orange;
@@ -105,11 +156,19 @@ line.normalVelocity {
     stroke-width: 3px;
     marker-end: url('#normalVelocityArrowHead');
 }
+
 #normalVelocityArrowHead {
     fill: red;
 }
 .normalVelocity {
     color: red;
+}
+path.normalVelocity {
+    fill: none;
+    stroke: red;
+}
+rect.normalVelocity {
+    stroke: red;
 }
 
 line.radialVelocity {
@@ -123,8 +182,16 @@ line.radialVelocity {
 .radialVelocity {
     color: blue
 }
+path.radialVelocity {
+    fill: none;
+    stroke: blue;
+}
+rect.radialVelocity {
+    stroke: blue;
+}
 
-line.velocityHelper {
+
+line.radialVelocityHelper, line.normalVelocityHelper {
     stroke: gray;
     stroke-width: 2px;
     stroke-dasharray: 4, 4;    
@@ -137,15 +204,23 @@ line.satRadius {
     opacity: 0.5;
 }
 
+
+line.velocityRadius {
+    stroke: gray;
+    stroke-width: 1px;
+    opacity: 0.5;
+}
+
 .hodographCircle {
     fill: none;
     stroke: orange;
     stroke-width: 2px;
-    opacity: 0.2;
+    stroke-dasharray: 4,4;
+    opacity: 0.5;
 }
 
 .hodographClippedCanvas {
-    clip-path: url("#cliphodograph");
+    clip-path: url("#clipHodograph");
 }
 
 .circularVelocity {
@@ -165,10 +240,17 @@ line.satRadius {
     stroke: #ddd;
 }
 
-.orbitAxis {
+.nBody {
+    fill: #ddd;
+    stroke: #888;
+    stroke-width: 1px;
+    opacity: 0.8;
+}
+
+line.orbitAxisX, line.orbitAxisY {
     stroke: gray;
     opacity: 0.5;
-    stroke-width: 0.5px;
+    stroke-width: 1px;
 }
 
 .orbit {
@@ -177,16 +259,63 @@ line.satRadius {
     stroke-width: 1.5px;
 }
 
-.axis {
+.xAxis {
     opacity: 0.35;
+}
+
+.yAxis {
+    opacity: 0.35;
+}
+
+path.axis {
+    fill: lightgray;
 }
 
 .axis text {
     font-family: sans-serif;
-    font-size: 9pt;
+    font-size: 8pt;
 }
 
 .axis.label {
     font-family: sans-serif;
-    font-size: 9pt;
+    font-size: 8pt;
+}
+
+.conicSectionLines line {
+    stroke-width: 4px;
+    opacity: 0.5;
+    marker-end: none;
+}
+g.tick line {
+    stroke-width: 1px;
+}
+.conicSectionLines line.trueAnomaly {
+    stroke: purple;
+    stroke-width: 4px;
+    opacity: 0.5;
+}
+
+.conicSectionLines path {
+    stroke-width: 2px;
+    fill: none;
+}
+.conicSectionLines path.flightPathAngle {
+    fill: none;
+    stroke: green;
+}
+
+.conicSectionLines rect {
+    stroke-width: 1px;
+    fill: white;
+}
+
+.tick text {
+    fill: gray;
+}
+
+.trail {
+    fill: none;
+    stroke: lightgray;
+    stroke-width: 1px;
+    opacity: 0.5;
 }

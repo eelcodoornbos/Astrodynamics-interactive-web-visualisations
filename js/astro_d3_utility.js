@@ -47,4 +47,33 @@ function anglesToClosedArcPath(xScale,yScale,x,y,radius,startangle,endangle,flip
     return d;
 }
 
+// Markers for arrowheads
+function addArrowMarker(config) {
+    var arrowPath = "M 0 0 " + config.arrowLength + " "+ config.arrowWidth  / 2 + " 0 "+ config.arrowWidth +" Z";
+    config.element.append("marker")
+        .attr("id",config.id)
+        .attr("markerWidth",config.arrowLength)
+        .attr("markerHeight",config.arrowWidth)
+        .attr("refX",config.arrowLength)
+        .attr("refY",config.arrowWidth/2)
+        .attr("orient","auto")
+        .append("path")
+            .attr("d",arrowPath); 
+}
+
+function scaleArrowStyle(element,length,defaultArrowLength,defaultVectorStrokeWidth) {
+    // Scales down the linewidth of a vector 
+    // if the length is shorter than the length of the arrowhead.
+    var linewidth;
+    if (Math.abs(length) < defaultArrowLength * defaultVectorStrokeWidth)
+    {
+        linewidth = Math.abs(length) / (defaultArrowLength) + "px";
+    } 
+    else 
+    {
+        linewidth = defaultVectorStrokeWidth + "px";
+    }
+    element.style("stroke-width",linewidth);
+}
+
 function sign(x){return x>0?1:x<0?-1:x;}

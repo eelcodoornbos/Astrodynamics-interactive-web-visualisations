@@ -162,7 +162,6 @@ astro = (function() {
     myobject.rungekutta4_singlestep = function(ode_function, y0, t, h) {
         var yi = y0.dup();
         var ti = t;
-
         var f1 = ode_function(ti,yi);
         var f2 = ode_function(ti+0.5*h,yi.add(f1.multiply(0.5*h)));
         var f3 = ode_function(ti+0.5*h,yi.add(f2.multiply(0.5*h)));
@@ -204,7 +203,7 @@ astro = (function() {
         return orbit;
     };
 
-    myobject.ode_2body = function(t,y) {
+    myobject.ode_2body = function(t,y) { // note that the time t is not used to evaluate the acceleration here
         if (y.dimensions() != 6) { console.log("ode_orbit: Expected 6 elements in vector"); }
         var farray = [];
         var r = Math.sqrt(Math.pow(y.e(1),2)+Math.pow(y.e(2),2)+Math.pow(y.e(3),2));
