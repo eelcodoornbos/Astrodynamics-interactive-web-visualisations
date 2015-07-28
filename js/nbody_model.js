@@ -30,17 +30,15 @@ model = {
             color: "green",
             name: "Green planet"
         },        
-/*
 
         {   
             mass:           1e-9, 
             position:       Vector.create([-500,    0,    0]), 
             velocity:       Vector.create([   0,   1.2,    0]),
             trail: [], 
-            color: "green",
-            name: "Green spacecraft"   
+            color: "purple",
+            name: "Purple spacecraft"   
         },
-*/
         {   
             mass:           1e-9, 
             position:       Vector.create([440,    0,    0]), 

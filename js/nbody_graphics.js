@@ -291,9 +291,13 @@ function nBodyChart()
 
 } // end of nBodyChart 
 
+
+var element = d3.select("#nbody");
+var canvasSize = d3.min([element.node().offsetWidth,0.8*window.innerHeight]);
+console.log(canvasSize);
 var myChart = nBodyChart()
-    .canvasWidth(0.8*window.innerHeight)
-    .canvasHeight(0.8*window.innerHeight);
+    .canvasWidth(canvasSize)
+    .canvasHeight(canvasSize);
 
 function initialize() {
     model.initialize();
