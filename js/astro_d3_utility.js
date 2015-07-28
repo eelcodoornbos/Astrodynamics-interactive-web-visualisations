@@ -76,4 +76,69 @@ function scaleArrowStyle(element,length,defaultArrowLength,defaultVectorStrokeWi
     element.style("stroke-width",linewidth);
 }
 
+gridLines = function() {
+    var orient = "horizontal",
+        xScale = d3.scale.linear(),
+        yScale = d3.scale.linear(),
+        ticks = 5;
+        
+    function grid(g) {
+        g.each(function() {
+            var g = d3.select(this);
+            if (orient === "horizontal") {
+                var gridLines = g.selectAll("line.horizontalGrid").data(yScale.ticks(ticks));
+                gridLines.enter().append("line").attr("class","horizontalGrid");
+                gridLines
+                    .attr("x1", function(d) { return xScale.range()[0] } )
+                    .attr("x2", function(d) { return xScale.range()[1] } )
+                    .attr("y1", function(d) { return yScale(d) })
+                    .attr("y2", function(d) { return yScale(d) });
+                gridLines.exit().remove();
+            } else {
+                var gridLines = g.selectAll("line.verticalGrid").data(xScale.ticks(ticks));
+                gridLines.enter().append("line").attr("class","verticalGrid");
+                gridLines
+                    .attr("x1", function(d) { return xScale(d); } )
+                    .attr("x2", function(d) { return xScale(d); } )
+                    .attr("y1", function(d) { return yScale.range()[0]; })
+                    .attr("y2", function(d) { return yScale.range()[1]; });
+                gridLines.exit().remove();                
+            }
+        });
+    }
+
+    grid.xScale = function(x) {
+        if (!arguments.length) return xScale;
+        xScale = x;
+        return grid;
+    };
+
+    grid.yScale = function(x) {
+        if (!arguments.length) return yScale;
+        yScale = x;
+        return grid;
+    };
+
+    grid.orient = function(x) {
+        if (!arguments.length) return orient;
+        orient = x;
+        return grid;
+    };
+    
+    grid.ticks = function(x) {
+        if (!arguments.length) return ticks;
+        ticks = x;
+        return grid;
+    };
+    
+    grid.tickValues = function(x) {
+        if (!arguments.length) return tickValues;
+        tickValues = x;
+        return grid;
+    };
+
+    return grid;
+
+}
+
 function sign(x){return x>0?1:x<0?-1:x;}

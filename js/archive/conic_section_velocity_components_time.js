@@ -144,19 +144,6 @@ var viewController = {
     },
     addMarkers: function() {
         // Markers for arrowheads
-        function addArrowMarker(config) {
-            var arrowPath = "M 0 0 " + config.arrowLength + " "+ config.arrowWidth  / 2 + " 0 "+ config.arrowWidth +" Z";
-            config.element.append("marker")
-                .attr("id",config.id)
-                .attr("markerWidth",config.arrowLength)
-                .attr("markerHeight",config.arrowWidth)
-                .attr("refX",config.arrowLength)
-                .attr("refY",config.arrowWidth/2)
-                .attr("orient","auto")
-                .style("fill",config.color)
-                .append("path")
-                    .attr("d",arrowPath); 
-        }
         viewController.defs = viewController.svg.append("defs");
         addArrowMarker({element: viewController.defs, id:"velocityArrowHead", 
             arrowLength: viewController.arrowLength, arrowWidth:viewController.arrowWidth, color:viewController.vColor});

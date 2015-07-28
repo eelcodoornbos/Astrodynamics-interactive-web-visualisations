@@ -27,19 +27,21 @@ div.svg-container {
 input[type='range'] {
     -webkit-appearance: none !important;
     background: lightgray;
-    height: 5px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
     margin: 0;
     width: 100%;
     max-width: 300px;
+    outline:none;    
 }
 input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none !important;
+    border: 1px solid #000000;
+    border-radius: 6px;
     background: gray;
     opacity: 1.0;
-    border-radius: 3px;
-    height: 10px;
-    width: 10px;
+    height: 12px;
+    width: 12px;
 }    
 
 .sliderController {
@@ -47,6 +49,17 @@ input[type='range']::-webkit-slider-thumb {
     font-size: 80%;
     font-family: sans-serif;
     margin-bottom: 5px;
+}
+
+.tmp-element {
+/*     visibility: hidden; */
+    white-space: pre;
+}
+
+label {
+    font-family: sans-serif;
+    font-size: 80%;
+    font-weight: normal;
 }
 
 .outputContainer {
@@ -73,10 +86,20 @@ input[type='range']::-webkit-slider-thumb {
     text-align: right;
 }
 
+.radioButtonLabel {
+    display: inline;
+    margin-left: 5px;
+    font-family: sans-serif;
+    font-size: 80%;
+    margin-bottom: 5px;
+    font-weight: normal;
+}
+
 /* Angles */
 path.trueAnomaly {
-    stroke: none;
-    fill: purple;
+    stroke: purple;
+    stroke-width: 5px;
+    fill: none;
     opacity: 0.3;
 }
 
@@ -87,17 +110,33 @@ input.trueAnomaly::-webkit-slider-thumb {
 .sliderAnnotation.trueAnomaly {
     color: purple;
 }
+
+path.argumentOfPerigee {
+    stroke: none;
+    fill: deepskyblue;
+    opacity: 0.3;
+}
+
+input.argumentOfPerigee::-webkit-slider-thumb {
+    background: deepskyblue;
+    opacity: 0.5;
+}    
+.sliderAnnotation.argumentOfPerigee {
+    color: deepskyblue;
+}
+
+
 line.semiLatusRectum {
-    stroke: darkcyan;
+    stroke: royalBlue;
     stroke-width: 3px;
     opacity: 0.5;
 }
 input.semiLatusRectum::-webkit-slider-thumb {
-    background: darkcyan;
+    background: royalBlue;
     opacity: 0.5;
 }    
 .sliderAnnotation.semiLatusRectum {
-    color: darkcyan;
+    color: royalBlue;
 }
 
 .flightPathAngle {
@@ -125,9 +164,12 @@ path.flightPathAngle.line {
 /* Vectors */
 line.acceleration {
     stroke: gray;
-    stroke-width: 3px;
+    stroke-width: 1px;
+    marker-end: url('#accelerationArrowHead');
 }
-
+#accelerationArrowHead {
+    fill: gray;
+}
 .velocity {
     color: orange;
 }
@@ -135,6 +177,11 @@ line.velocity {
     stroke: orange;
     stroke-width: 3px;
     marker-end: url('#velocityArrowHead');
+}
+
+line.nbodyvelocity {
+    stroke-width: 4px;
+/*     marker-end: url('#velocityArrowHead'); */
 }
 
 line.velocity {
@@ -193,7 +240,7 @@ rect.radialVelocity {
 
 line.radialVelocityHelper, line.normalVelocityHelper {
     stroke: gray;
-    stroke-width: 2px;
+    stroke-width: 1px;
     stroke-dasharray: 4, 4;    
     opacity: 0.5;
 }
@@ -315,7 +362,93 @@ g.tick line {
 
 .trail {
     fill: none;
-    stroke: lightgray;
-    stroke-width: 1px;
-    opacity: 0.5;
+    stroke-width: 3px;
+    opacity: 0.3;
 }
+
+input[type="radio"] {
+  display: inline; 
+  margin: 0;
+  width: 1em;
+  height: 1em;
+}
+
+input.slidertextfield {    
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    width: 35px;
+    padding: 0;
+    margin: 0;
+    text-align: right;
+    min-width: 1;
+    min-height: 0;
+    overflow: visible;
+}
+
+.verticalGrid, .horizontalGrid {
+    fill: none;
+    shape-rendering; crispEdges;
+    stroke: black;
+    stroke-width: 1px;
+    opacity: 0.1;
+}
+
+/* Buttons
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box; }
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: #333;
+  border-color: #888;
+  outline: 0; }
+.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary,
+input[type="reset"].button-primary,
+input[type="button"].button-primary {
+  color: #FFF;
+  background-color: #33C3F0;
+  border-color: #33C3F0; }
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover,
+input[type="reset"].button-primary:hover,
+input[type="button"].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type="submit"].button-primary:focus,
+input[type="reset"].button-primary:focus,
+input[type="button"].button-primary:focus {
+  color: #FFF;
+  background-color: #1EAEDB;
+  border-color: #1EAEDB; }
