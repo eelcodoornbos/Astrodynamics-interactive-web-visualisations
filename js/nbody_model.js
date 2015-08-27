@@ -52,7 +52,6 @@ model = {
     time: 0,
     stepSize: 5,
     gravitationalConstant: 1,
-    y0: {},
     initialize: function initialize() {
         model.referenceObject = model.zeroObject;
     },
@@ -75,10 +74,8 @@ function computeNextTimeStep() {
         yarray.push(currentObject.velocity.e(2));
         yarray.push(currentObject.velocity.e(3));         
     });
-    model.y0 = Vector.create(yarray);            
-    var y = astro.rungekutta4_singlestep(ode_nbody, model.y0, model.time, model.stepSize);
-    model.totalKineticEnergy = 0;
-    model.totalPotentialEnergy = 0;
+    var y0 = Vector.create(yarray);            
+    var y = astro.rungekutta4_singlestep(ode_nbody, y0, model.time, model.stepSize);
     model.objects.forEach( function(currentObject, index) 
     {
         currentObject.position = Vector.create([ y.e(index*6 + 1), y.e(index*6 + 2), y.e(index*6 + 3) ]);    
@@ -137,11 +134,15 @@ function centreOfMass() {
     });
     model.com.position = positionTimesMassSum.multiply(1/totalmass);
     model.com.velocity = velocityTimesMassSum.multiply(1/totalmass);
+    model.comvx = model.com.velocity.e(1);
+    model.comvy = model.com.velocity.e(2);    
 };
 
 function acceleration() {
     model.totalKineticEnergy = 0;
     model.totalPotentialEnergy = 0;
+    model.angularMomentum = $V([0,0,0]);
+    console.log(model.Hz);
     
     model.objects.forEach( function(object1, index1) {
         object1.acceleration = Vector.Zero(3);
@@ -160,9 +161,11 @@ function acceleration() {
            }             
         })
         model.totalKineticEnergy += object1.kineticEnergy;
-        model.totalPotentialEnergy += object1.potentialEnergy;        
+        model.totalPotentialEnergy += object1.potentialEnergy;
+        model.angularMomentum = model.angularMomentum.add(object1.position.cross(object1.velocity).multiply(object1.mass));
     });
-    model.totalEnergy = model.totalKineticEnergy + model.totalPotentialEnergy;    
+    model.totalEnergy = model.totalKineticEnergy + model.totalPotentialEnergy;
+    model.Hz = model.angularMomentum.e(3);
 };
 
 function ode_nbody(t,y) 

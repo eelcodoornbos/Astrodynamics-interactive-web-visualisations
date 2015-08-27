@@ -198,16 +198,16 @@ function setViewLock() {
 controllerContainer.append("label")
     .classed('sliderController', true)
     .attr("for","selectViewLock")
-    .html("Origin of viewport")
+    .html("Translate reference frame origin to:")
 var selectViewLock = controllerContainer.append("select")
     .attr('id','selectViewLock')
     .on("input",function() { setViewLock() });
 selectViewLock.append("option")
     .attr("value","zeroObject")
-    .html("Inertial");
+    .html("No translation (inertial)");
 selectViewLock.append("option")
     .attr("value","com")
-    .html("Inertial centre of mass");
+    .html("Centre of mass (inertial)");
 model.objects.forEach( function(currentObject, currentIndex) {
     selectViewLock.append("option")
         .attr("value",currentIndex)
@@ -267,3 +267,27 @@ addOutput(controllerContainer,
       multiplier: 1,
       units: "" 
     });
+    
+addOutput(controllerContainer, 
+{ label: "Angular momentum around Z",
+  property: "Hz",
+  prefix: "<i>H<sub>z</sub></i> = ",
+  multiplier: 1,
+  units: "" 
+});
+addOutput(controllerContainer, 
+{ label: "Velocity of centre of mass in X direction",
+  property: "comvx",
+  prefix: "<i>v<sub>com,x</sub></i> = ",
+  multiplier: 1,
+  units: "",
+  digits: 3 
+}); 
+addOutput(controllerContainer, 
+{ label: "Velocity of centre of mass in Y direction",
+  property: "comvy",
+  prefix: "<i>v<sub>com,y</sub></i> = ",
+  multiplier: 1,
+  units: "",
+  digits: 3  
+}); 

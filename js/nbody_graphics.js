@@ -9,7 +9,7 @@ function nBodyChart()
     var velocityScale = 50;
     var accelerationScale = 20000;
     var radiusScale = 10;
-    var comRadius = 7;
+    var comRadius = 5;
     
     // Getter-setters of the properties
     chart.canvasWidth = function(value) {
@@ -258,27 +258,6 @@ function nBodyChart()
                 .style('stroke','none')
                 .style('fill','black');
                 
-            centreOfMassGroup.append('path')
-                .attr('d','M 0,0 L 0,5 A 5,5 0 0,0 5,0 L 0,0')
-                .style('stroke','none')
-                .style('fill','black');
-            
-/*
-            centreOfMassGroup.append('rect')
-                .attr('x',-comRadius)
-                .attr('y',0)
-                .attr('width',comRadius)
-                .attr('height',comRadius)
-                .style('stroke','none')
-                .style('fill','black');
-            centreOfMassGroup.append('rect')
-                .attr('x',0)
-                .attr('y',-comRadius)
-                .attr('width',comRadius)
-                .attr('height',comRadius)
-                .style('stroke','none')
-                .style('fill','black');                
-*/
             gUpdate.select('g.centreOfMass').transition().duration(transitionDuration)
                 .attr("transform","translate(" + 
                     (xScale(model.com.displayPosition.e(1))) + "," + 

@@ -388,7 +388,7 @@ input.slidertextfield {
 
 .verticalGrid, .horizontalGrid {
     fill: none;
-    shape-rendering; crispEdges;
+/*     shape-rendering; crispEdges; */
     stroke: black;
     stroke-width: 1px;
     opacity: 0.1;
