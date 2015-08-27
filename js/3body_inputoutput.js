@@ -332,8 +332,8 @@ addSlider(controllerContainerTop,
       max: 10, 
       step: 0.01, 
       digits: 2,
-      reInitializeMainBodies: false,
-      reInitializeThirdBody: false }
+      reInitializeMainBodies: true,
+      reInitializeThirdBody: true }
 );
 
 addHeader(controllerContainer, { label: "Input" });
@@ -351,6 +351,7 @@ addSlider(controllerContainer,
       reInitializeMainBodies: true,
       reInitializeThirdBody: true  }
 );
+controllerContainer.append("br")
 
 addSlider(controllerContainer, 
     { label: "X-position", 
@@ -378,6 +379,8 @@ addSlider(controllerContainer,
       reInitializeMainBodies: false,
       reInitializeThirdBody: true  }
 );
+
+controllerContainer.append("br")
 
 addSlider(controllerContainer, 
     { label: "Velocity", 
@@ -407,6 +410,9 @@ addSlider(controllerContainer,
       reInitializeThirdBody: true,
       setVelocity: true  }
 );
+
+controllerContainer.append("br")
+
 
 addSlider(controllerContainer, 
     { label: "Time step size", 

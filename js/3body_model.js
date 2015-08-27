@@ -1,4 +1,5 @@
 model = {
+    corotateTrail: true,
     zoomLevel: 2,
     maxZoomLevel: 10000,
     showTrails: true,
@@ -234,8 +235,8 @@ var zeroVelocityCurves = function() {
     // in normalized distance units, where major body is at -mu
     // and minor body is at 1-mu on x-axis from origin
     var range = { min: -3, max: +3 }; 
-    var step = 0.03; // Lower stepsize makes more finely detailed contour
-    
+    var step = d3.max([0.008, 0.02 * model.zoomLevel]); // Lower stepsize makes more finely detailed contour
+
     // Ranges in x and y for the data array
     var xs = d3.range(range.min, range.max + step/2, step);
     var ys = d3.range(range.min, range.max + step/2, step);
