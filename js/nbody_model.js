@@ -2,6 +2,8 @@ model = {
     zoomLevel: 2000,
     maxZoomLevel: 10000,
     showTrails: true,
+    showVelocities: true,
+    showAccelerations: true,
     showSphereOfInfluence: false,
     zeroObject: { position: Vector.Zero(3), velocity: Vector.Zero(3), trail: [] },
     referenceObject: {},
@@ -54,6 +56,10 @@ model = {
     gravitationalConstant: 1,
     initialize: function initialize() {
         model.referenceObject = model.zeroObject;
+        model.totalMass = 0;
+        model.objects.forEach( function(currentObject) {
+           model.totalMass += currentObject.mass;
+        });
     },
     eraseTrails: function() {
         model.objects.forEach( function(currentObject, index) {
@@ -114,7 +120,6 @@ function displayPositionVelocity() {
 function displayTrail() {
     model.objects.forEach( function(currentObject, objectIndex) {
        currentObject.displayTrail = [];
-//       console.log(model.referenceObject.trail);
        currentObject.trail.forEach( function(trailPoint, trailPointIndex) {
            currentObject.displayTrail[trailPointIndex] = currentObject.trail[trailPointIndex].subtract(model.referenceObject.trail[trailPointIndex]);
        });
@@ -124,25 +129,22 @@ function displayTrail() {
 function centreOfMass() {
     var positionTimesMassSum = Vector.Zero(3);
     var velocityTimesMassSum = Vector.Zero(3);
-    var totalmass = 0;
     model.objects.forEach( function(object, index) {
-        totalmass += object.mass;
         var positionTimesMass = object.position.multiply(object.mass);
         var velocityTimesMass = object.velocity.multiply(object.mass);
         positionTimesMassSum = positionTimesMassSum.add(positionTimesMass);
         velocityTimesMassSum = velocityTimesMassSum.add(velocityTimesMass);
     });
-    model.com.position = positionTimesMassSum.multiply(1/totalmass);
-    model.com.velocity = velocityTimesMassSum.multiply(1/totalmass);
+    model.com.position = positionTimesMassSum.multiply(1/model.totalMass);
+    model.com.velocity = velocityTimesMassSum.multiply(1/model.totalMass);
     model.comvx = model.com.velocity.e(1);
-    model.comvy = model.com.velocity.e(2);    
+    model.comvy = model.com.velocity.e(2);
 };
 
 function acceleration() {
     model.totalKineticEnergy = 0;
     model.totalPotentialEnergy = 0;
     model.angularMomentum = $V([0,0,0]);
-    console.log(model.Hz);
     
     model.objects.forEach( function(object1, index1) {
         object1.acceleration = Vector.Zero(3);
@@ -212,3 +214,4 @@ function ode_nbody(t,y)
     }
     return Vector.create(farray);
 };
+model.initialize();

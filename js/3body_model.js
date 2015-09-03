@@ -235,7 +235,7 @@ var zeroVelocityCurves = function() {
     // in normalized distance units, where major body is at -mu
     // and minor body is at 1-mu on x-axis from origin
     var range = { min: -3, max: +3 }; 
-    var step = d3.max([0.008, 0.02 * model.zoomLevel]); // Lower stepsize makes more finely detailed contour
+    var step = d3.max([0.008, 0.01 * model.zoomLevel]); // Lower stepsize makes more finely detailed contour
 
     // Ranges in x and y for the data array
     var xs = d3.range(range.min, range.max + step/2, step);

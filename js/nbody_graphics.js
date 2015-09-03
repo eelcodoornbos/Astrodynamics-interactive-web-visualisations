@@ -7,8 +7,8 @@ function nBodyChart()
     var xScale = d3.scale.linear();
     var yScale = d3.scale.linear();
     var velocityScale = 50;
-    var accelerationScale = 20000;
-    var radiusScale = 10;
+    var accelerationScale = 40000;
+    var radiusScale = 3;
     var comRadius = 5;
     
     // Getter-setters of the properties
@@ -20,6 +20,16 @@ function nBodyChart()
     chart.canvasHeight = function(value) {
         if (!arguments.length) return canvasHeight;
         canvasHeight = value;
+        return chart;
+    };
+    chart.accelerationScale = function(value) {
+        if (!arguments.length) return accelerationScale;
+        accelerationScale = value;
+        return chart;
+    };
+    chart.velocityScale = function(value) {
+        if (!arguments.length) return velocityScale;
+        velocityScale = value;
         return chart;
     };
 
@@ -192,45 +202,55 @@ function nBodyChart()
                 .classed('nBody', true);
             body.append('circle')
                 .attr("fill", function(d,i) { return d.color})
-                .attr("fill-opacity","0.5")
+                .attr("fill-opacity","0.25")
                 .attr("stroke","none")
                 .call(dragbody);
             bodies = gUpdate.selectAll('.nBody').data(model.objects);
             bodies.select('circle').transition().duration(transitionDuration)
                 .attr("cx",function(d) { return xScale(d.displayPosition.e(1)) })
                 .attr("cy",function(d) { return yScale(d.displayPosition.e(2)) })
-                .attr("r",function(d) { return d3.max([xScale(radiusScale * Math.pow(d.mass,1/3))-xScale(0),4]); });
+                .attr("r",function(d) { return d3.max([xScale(radiusScale * Math.pow(d.mass,1/2))-xScale(0),5]); });
                                    
             // Velocity vectors
-            body.append('line')
-                .classed('nbodyvelocity', true)
-                .attr("stroke",function(d,i) { return model.objects[i].color })
-                .attr("stroke-opacity","1")
-                .call(dragvelocity);
-            var velocityVecs = bodies.select('line.nbodyvelocity').transition().duration(transitionDuration)
-                .attr("x1",function(d) { return xScale(d.displayPosition.e(1)) })
-            	.attr("y1",function(d) { return yScale(d.displayPosition.e(2)) })
-                .attr("x2",function(d) { return xScale(d.displayPosition.e(1) + d.displayVelocity.e(1) * velocityScale) })
-            	.attr("y2",function(d) { return yScale(d.displayPosition.e(2) + d.displayVelocity.e(2) * velocityScale) });
+            if (model.showVelocities) {
+                bodies.append('line')
+                    .classed('nbodyvelocity', true)
+                    .attr("stroke",function(d,i) { return model.objects[i].color })
+                    .attr("stroke-opacity","1")
+                    .call(dragvelocity);
+                var velocityVecs = bodies.select('line.nbodyvelocity').transition().duration(transitionDuration)
+                    .attr("x1",function(d) { return xScale(d.displayPosition.e(1)) })
+                	.attr("y1",function(d) { return yScale(d.displayPosition.e(2)) })
+                    .attr("x2",function(d) { return xScale(d.displayPosition.e(1) + d.displayVelocity.e(1) * velocityScale) })
+                	.attr("y2",function(d) { return yScale(d.displayPosition.e(2) + d.displayVelocity.e(2) * velocityScale) });
+            } else {
+                bodies.select('line.nbodyvelocity').remove();                
+            }
 
             // Acceleration
-            body.append('line')
-                .classed('acceleration', true);
-            var accelerationVecs = bodies.select('line.acceleration').transition().duration(transitionDuration)
-                .attr("x1",function(d) {return xScale(d.displayPosition.e(1))})
-                .attr("y1",function(d) {return yScale(d.displayPosition.e(2))})
-                .attr("x2",function(d) {return xScale(d.displayPosition.e(1) + d.acceleration.e(1) * accelerationScale) })
-                .attr("y2",function(d) {return yScale(d.displayPosition.e(2) + d.acceleration.e(2) * accelerationScale) });
-            accelerationVecs.each( function(d,i) {
-                scaleArrowStyle(
-                    d3.select(this),
-                    Math.sqrt(
-                        Math.pow(xScale(model.objects[i].acceleration.e(1))-xScale(0),2) + 
-                        Math.pow(yScale(model.objects[i].acceleration.e(2))-yScale(0),2)
-                    ) * accelerationScale,
-                    4,
-                    2);
-            } );            
+            if (model.showAccelerations) {
+                bodies.append('line')
+                    .classed('acceleration', true)
+                    .attr("stroke",function(d,i) { return model.objects[i].color })
+                    .attr("stroke-opacity","0.5");                    ;
+                var accelerationVecs = bodies.select('line.acceleration').transition().duration(transitionDuration)
+                    .attr("x1",function(d) {return xScale(d.displayPosition.e(1))})
+                    .attr("y1",function(d) {return yScale(d.displayPosition.e(2))})
+                    .attr("x2",function(d) {return xScale(d.displayPosition.e(1) + d.acceleration.e(1) * accelerationScale) })
+                    .attr("y2",function(d) {return yScale(d.displayPosition.e(2) + d.acceleration.e(2) * accelerationScale) });
+                accelerationVecs.each( function(d,i) {
+                    scaleArrowStyle(
+                        d3.select(this),
+                        Math.sqrt(
+                            Math.pow(xScale(model.objects[i].acceleration.e(1))-xScale(0),2) + 
+                            Math.pow(yScale(model.objects[i].acceleration.e(2))-yScale(0),2)
+                        ) * accelerationScale,
+                        4,
+                        2);
+                } );            
+            } else {
+                bodies.select('line.acceleration').remove();
+            }
 
             // Trails
             body.append('path')
@@ -272,11 +292,12 @@ function nBodyChart()
 
 
 var element = d3.select("#nbody");
-var canvasSize = d3.min([element.node().offsetWidth,0.8*window.innerHeight]);
-console.log(canvasSize);
+var canvasSize = d3.min([element.node().offsetWidth,1*window.innerHeight]);
 var myChart = nBodyChart()
     .canvasWidth(canvasSize)
-    .canvasHeight(canvasSize);
+    .canvasHeight(canvasSize)
+    .accelerationScale(50000)
+    .velocityScale(100);
 
 function initialize() {
     model.initialize();

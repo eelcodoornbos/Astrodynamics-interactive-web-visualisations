@@ -1,7 +1,6 @@
 var outputs = [];
 
 var controllerContainer = d3.select('#nbodycontrols');
-var controllerContainerTop = d3.select('#nbodycontrolstop').style("padding","30px");
 
 function startStopAnimation() 
 {
@@ -17,7 +16,7 @@ function startStopAnimation()
 	}
 }
 var animationRunning = false;
-var startStopButton = controllerContainerTop.append("div").style("float","right").append("button")
+var startStopButton = controllerContainer.append("div").style("float","right").append("button")
     .html("Start")
     .on("click",function() { startStopAnimation() });
 
@@ -149,37 +148,6 @@ function addSlider(element, input) {
 
 addHeader(controllerContainer, { label: "View settings" });
 
-var div = controllerContainer.append('div');
-div.append("input")
-    .attr('type','checkbox')
-    .attr('id','setTrail')
-    .property('checked',model.showTrails)
-    .on("change",function() { 
-        value = d3.select('#setTrail').property("checked");
-        model.showTrails = value;
-        if (!model.showTrails) { model.eraseTrails(); }
-    })
-div.append("label")
-    .style('display','inline')
-    .attr("for","setTrail")
-    .html("Show trails") ;
-
-var div = controllerContainer.append('div');
-div.append("input")
-    .attr('type','checkbox')
-    .attr('id','showSphereOfInfluence')
-    .property('checked',model.showSphereOfInfluence)
-    .on("change",function() { 
-        value = d3.select('#showSphereOfInfluence').property("checked");
-        model.showSphereOfInfluence = value;
-        updateNeeded = true;
-    })
-div.append("label")
-    .style('display','inline')
-    .attr("for","showSphereOfInfluence")
-    .html("Show sphere of influence") ;
-
-
 function setViewLock() {
 //    var value = d3.select('input[name="selectViewLock"]:checked').node().value;
     var value = d3.select('#selectViewLock').property("value");
@@ -207,7 +175,7 @@ selectViewLock.append("option")
     .html("No translation (inertial)");
 selectViewLock.append("option")
     .attr("value","com")
-    .html("Centre of mass (inertial)");
+    .html("Barycenter (inertial)");
 model.objects.forEach( function(currentObject, currentIndex) {
     selectViewLock.append("option")
         .attr("value",currentIndex)
@@ -215,7 +183,7 @@ model.objects.forEach( function(currentObject, currentIndex) {
 });
 
 
-addSlider(controllerContainerTop, 
+addSlider(controllerContainer, 
     { label: "Zoom extent", 
       property: "zoomLevel", 
       prefix: "zoom = ",
@@ -227,10 +195,106 @@ addSlider(controllerContainerTop,
       digits: 0 }
 );
 
+var div = controllerContainer.append('div');
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','setTrail')
+    .property('checked',model.showTrails)
+    .on("change",function() { 
+        value = d3.select('#setTrail').property("checked");
+        model.showTrails = value;
+        if (!model.showTrails) { model.eraseTrails(); }
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","setTrail")
+    .html("Show trails") ;
+
+/*
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','showSphereOfInfluence')
+    .property('checked',model.showSphereOfInfluence)
+    .on("change",function() { 
+        value = d3.select('#showSphereOfInfluence').property("checked");
+        model.showSphereOfInfluence = value;
+        updateNeeded = true;
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","showSphereOfInfluence")
+    .html("Show sphere of influence") ;
+*/
+
+div.append("br");
+
+
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','showAccelerations')
+    .property('checked',model.showAccelerations)
+    .on("change",function() { 
+        value = d3.select('#showAccelerations').property("checked");
+        model.showAccelerations = value;
+        updateNeeded = true;
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","showAccelerations")
+    .html("Show accelerations");
+
+div.append("br");
+
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','showVelocities')
+    .property('checked',model.showVelocities)
+    .on("change",function() { 
+        value = d3.select('#showVelocities').property("checked");
+        model.showVelocities = value;
+        updateNeeded = true;
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","showVelocities")
+    .html("Show velocities");
+
+
 addHeader(controllerContainer, { label: "Input" });
 
+var table = controllerContainer.append("table")
+    .classed("nbodypropertytable",true);
+
+var row = table.append("tr")
+row.append("td").html("Object name");
+row.append("td").html("Mass");
+row.append("td").html("<i>x</i>");
+row.append("td").html("<i>y</i>");
+row.append("td").html("<i>v<sub>x</sub></i>");
+row.append("td").html("<i>v<sub>y</sub></i>");
+
+model.objects.forEach( function(object) {
+    var row = table.append("tr")
+    row.append("td").html(object.name);
+    row.append("td").html(object.mass.toFixed(0));
+    row.append("td").html(object.position.e(1).toFixed(0));
+    row.append("td").html(object.position.e(2).toFixed(0));
+    row.append("td").html(object.velocity.e(1).toFixed(2));
+    row.append("td").html(object.velocity.e(2).toFixed(2));
+});
+centreOfMass();
+var row = table.append("tr")
+row.append("td").html("Barycenter");
+row.append("td").html(model.totalMass.toFixed(0));
+row.append("td").html(model.com.position.e(1).toFixed(0));
+row.append("td").html(model.com.position.e(2).toFixed(0));
+row.append("td").html(model.com.velocity.e(1).toFixed(2));
+row.append("td").html(model.com.velocity.e(1).toFixed(2));
+
+controllerContainer.append("br");
+
 addSlider(controllerContainer, 
-    { label: "Time step size", 
+    { label: "Integration time step", 
       property: "stepSize", 
       prefix: "<i>h</i> = ",
       multiplier: 1,                  
@@ -263,7 +327,7 @@ addOutput(controllerContainer,
 addOutput(controllerContainer, 
     { label: "Total energy",
       property: "totalEnergy",
-      prefix: "<i>C</i> = ",
+      prefix: "<i>C = E<sub>k</sub> + E<sub>p</sub></i> = ",
       multiplier: 1,
       units: "" 
     });
@@ -290,4 +354,4 @@ addOutput(controllerContainer,
   multiplier: 1,
   units: "",
   digits: 3  
-}); 
+});
