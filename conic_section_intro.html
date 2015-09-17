@@ -29,6 +29,7 @@ MathJax.Hub.Config({
 
 <body>
     <header>
+<!--
         <div class="title">
             <div class="container">
                 <div class="row">
@@ -48,59 +49,20 @@ MathJax.Hub.Config({
         <div class="contents">
             <div class="container">
                 <div class="row" id="menu">
-<!--
-                    <div class="three columns">
-                        <ul class="toc">
-                            <li>Two body problem</li>
-                            <li>Equation of motion</li>
-                            <li>Conservation laws</li>
-                            <li>Shape of the orbit</li>
-                            <li>Conic sections</li>
-                            <li>Kepler's laws</li>
-                            <li><a href="velocitycomponents.html">Velocity components</a></li>
-                            <li>Eccentricity vector</li>
-                    </div>
-                    <div class="three columns">
-                        <ul class="toc">
-                            <li>Three body problem</li>
-                            <li>Equation of motion</li>
-                            <li>Circular restricted</li>
-                            <li>Lagrange points</li>
-                            <li>Conic sections</li>
-                            <li>Kepler's laws</li>
-                            <li><a href="velocitycomponents.html">Velocity components</a></li>
-                            <li>Eccentricity vector</li>
-                        </ul>
-                    </div>
-                    <div class="three columns">
-                        <ul class="toc">
-                            <li>Three body problem</li>
-                            <li>Equation of motion</li>
-                            <li>Circular restricted</li>
-                            <li>Lagrange points</li>
-                            <li>Conic sections</li>
-                            <li>Kepler's laws</li>
-                            <li><a href="velocitycomponents.html">Velocity components</a></li>
-                            <li>Eccentricity vector</li>
-                        </ul>
-                    </div>
-                    <div class="three columns colophon">
-                        by Eelco Doornbos,
-                        based on "Fundamentals of Astrodynamics"
-                        by Karel Wakker
-                    </div>                
--->
+
                 </div>
             </div>
         </div>
+-->
+        
     </header>
     <div class="container">
         <div class="row">
             <div class="nine columns">
-                <h4>Velocity components</h4>
+                <h4>Conic section in polar coordinates</h4>
                 <p>
                     <span style="display: none;">$\definecolor{velocity}{RGB}{255,165,0}\definecolor{vr}{RGB}{0,0,255}\definecolor{vn}{RGB}{255,0,0}$</span>
-                    In the previous section, we derived the equation for the shape of a satellite orbit from the differential equations of motion for the Two-Body Problem. We found The resulting equation matches the formula for a conic section in the polar coordinate system $r$ and ${\color{purple}\theta}$, where $p$ and $e$ are integration constants that will have to be set based on initial conditions.
+<!--                     In the previous section, we derived the equation for the shape of a satellite orbit from the differential equations of motion for the Two-Body Problem. We found The resulting equation matches the formula for a conic section in the polar coordinate system $r$ and ${\color{purple}\theta}$, where $p$ and $e$ are integration constants that will have to be set based on initial conditions. -->
 \begin{equation}
                         r = \frac{p}{1+e\cos{\theta}} 
 \end{equation}
@@ -114,7 +76,11 @@ MathJax.Hub.Config({
             <div class="three columns">
                 <div id="conic_section_polar_controls"></div>
             </div>
-        <script type="text/javascript" src="js/conic_section_velocity_components.js"></script>
+        <script type="text/javascript" src="js/conic_section_model.js"></script>
+        <script type="text/javascript" src="js/conic_section_inputoutput.js"></script>
+<!--         <script type="text/javascript" src="js/conic_section_lines.js"></script> -->
+        <script type="text/javascript" src="js/conic_section_orbit.js"></script>
+<!--         <script type="text/javascript" src="js/conic_section_hodograph.js"></script> -->
         <script type="text/javascript">
             model.eccentricity = 0;
             model.init();
@@ -141,6 +107,7 @@ MathJax.Hub.Config({
         </script>                   
         </div>    
     </div> <!-- container -->
+<!--
     <footer>
         <div class="container">
             <div class="row">
@@ -149,6 +116,7 @@ MathJax.Hub.Config({
                 </div>
             </div>
     </footer>
+-->
     <script type="text/javascript" src="js/menu.js"></script>
 </body>
 

@@ -12,18 +12,114 @@
 
 <body>    
     <div id="graphs" style="float: left;">
+        
         <div id="conic_section_velocity_components_orbit" style="float: left;"></div>
         <div id="conic_section_velocity_components_hodograph" style="float: left;"></div>
         <div id="conic_section_velocity_components_lines" style="float: left; clear: both;"></div>                
-    </div>
-    <div id="controls" style="float: right;">
         <div id="conic_section_velocity_components_controls" style="float: right;"></div>
     </div>
 
     <script type="text/javascript" src="js/conic_section_model.js"></script>
+    <script type="text/javascript" src="js/conic_section_inputoutput.js"></script>
     <script type="text/javascript" src="js/conic_section_orbit.js"></script>
     <script type="text/javascript" src="js/conic_section_hodograph.js"></script>
-    <script type="text/javascript" src="js/conic_section_lines.js"></script>        
+    <script type="text/javascript" src="js/conic_section_lines.js"></script>
+    
+        <script type="text/javascript">
+
+            model.init();
+
+            function updateGraphs() {
+               d3.select("#conic_section_velocity_components_orbit").datum(model).call(orbitChart);
+               d3.select("#conic_section_velocity_components_hodograph").datum(model).call(hodographChart);
+               d3.select("#conic_section_velocity_components_lines").datum(model.twoBodyData).call(lineChart);
+               d3.select("#conic_section_flightpathangle").datum(model.twoBodyData).call(lineChart2);
+            }
+            
+            var orbitControls = conicSectionInputOutput()
+                .graphSetPrefix("conic_section_velocity_components")
+                .sliders(
+                           [{ label: "Semi latus rectum", 
+                              property: "semiLatusRectum", 
+                              prefix: "<i>p</i> = ",
+                              multiplier: 1,                  
+                              units: " km",
+                              min: 100, 
+                              max: 40000, 
+                              step: 200, 
+                              digits: 0 },
+                        
+                            { label: "Eccentricity",
+                              property: "eccentricity",
+                              prefix: "<i>e</i> = ",
+                              multiplier: 1,
+                              units: "",
+                              min: 0,
+                              max: 2,
+                              step: 0.01,
+                              digits: 2 },
+                    
+/*
+                            { label: "Argument of perigee",
+                              property: "argumentOfPerigee",
+                              prefix: "<i>&phi;</i> = ",
+                              multiplier: 180 / Math.PI,
+                              units: "&deg;",
+                              min: 0,
+                              max: 360,
+                              step: 1,
+                              digits: 1 },
+*/
+                    
+                            { label: "True anomaly",
+                              property: "trueAnomaly",
+                              prefix: "<i>&theta;</i> = ",
+                              multiplier: 180 / Math.PI,
+                              units: "&deg;",
+                              min: -180,
+                              max: 180,
+                              step: 1,
+                              digits: 1 }]                    
+                );
+                
+            d3.select("#conic_section_velocity_components_controls").datum(model).call(orbitControls);
+            
+            var orbitChart = conicSectionOrbit()
+                .showSemiLatusRectum(false)
+                .showArgumentOfPerigee(false)
+                .showVelocity(true)
+                .showNormalRadialVelocity(true)
+                .showHodographCircle(true)
+                .showFlightPathAngle(true)
+                .canvasWidth(800)
+                .canvasHeight(400)
+                .velocityScale(150/16);
+
+            var hodographChart = conicSectionHodograph()
+                .canvasWidth(250)
+                .canvasHeight(300);
+
+            var lineChart = conicSectionLines()
+                .canvasWidth(800)
+                .canvasHeight(400)
+                .ranges( { xmin: -180, xmax: +180, ymin: -15, ymax: +15 } );
+
+            var lineChart2 = conicSectionLines()
+                .canvasWidth(300)
+                .canvasHeight(300)
+                .plotVariables([{xAxisVariable: "trueAnomaly",
+                                 xAxisScaleFactor: 180/Math.PI,
+                                 yAxisVariable: "flightPathAngle",
+                                 yAxisScaleFactor: 180/Math.PI}])
+                .yAxisLabel("Flight path angle (deg)")
+                .ranges( { xmin: -180, xmax: +180, ymin: -90, ymax: +90 } )
+                .yTickValues([-90,-60,-30,30,60,90]);
+
+            
+            updateGraphs();
+        </script>
+    
+    
 </body>
 
 
