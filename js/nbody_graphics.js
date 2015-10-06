@@ -8,7 +8,7 @@ function nBodyChart()
     var yScale = d3.scale.linear();
     var velocityScale = 50;
     var accelerationScale = 40000;
-    var radiusScale = 3;
+    var radiusScale = 20;
     var comRadius = 5;
     
     // Getter-setters of the properties
@@ -42,6 +42,7 @@ function nBodyChart()
             var draggedPosition = Vector.create( [xScale.invert(d3.event.x), yScale.invert(d3.event.y), 0] );
             model.objects[i].position = draggedPosition;
             setModel();
+            if (true) { setCircularVelocities(); }
             updateNeeded = true;
             model.keepTrails = true;
 
@@ -203,13 +204,13 @@ function nBodyChart()
             body.append('circle')
                 .attr("fill", function(d,i) { return d.color})
                 .attr("fill-opacity","0.25")
-                .attr("stroke","none")
+                .attr("stroke",function(d,i) { return d.color})
                 .call(dragbody);
             bodies = gUpdate.selectAll('.nBody').data(model.objects);
             bodies.select('circle').transition().duration(transitionDuration)
                 .attr("cx",function(d) { return xScale(d.displayPosition.e(1)) })
                 .attr("cy",function(d) { return yScale(d.displayPosition.e(2)) })
-                .attr("r",function(d) { return d3.max([xScale(radiusScale * Math.pow(d.mass,1/2))-xScale(0),5]); });
+                .attr("r",function(d) { return d3.max([xScale(radiusScale * Math.pow(d.mass,1/3))-xScale(0),5]); });
                                    
             // Velocity vectors
             if (model.showVelocities) {
@@ -226,6 +227,8 @@ function nBodyChart()
             } else {
                 bodies.select('line.nbodyvelocity').remove();                
             }
+
+
 
             // Acceleration
             if (model.showAccelerations) {
@@ -255,9 +258,21 @@ function nBodyChart()
             // Trails
             body.append('path')
                 .classed('trail', true)
-                .attr("stroke",function(d,i) { return model.objects[i].color });
+                .attr("stroke",function(d,i) { return model.objects[i].color })
+                .attr("stroke-dasharray","5,2");
             bodies.select('.trail').transition().duration(transitionDuration)
-                .attr("d",function(d,i) { return orbitLineFunction(model.objects[i].displayTrail) } );
+                .attr("d",function(d,i) { return orbitLineFunction(model.objects[i].displayTrail) } );          
+
+            if (model.showOsculatingOrbits) {
+                // Osculating orbits
+                bodies.append('path')
+                    .classed('osculatingOrbit',true)
+                    .attr("stroke",function(d,i) { return model.objects[i].color });
+                bodies.select('.osculatingOrbit').transition().duration(transitionDuration)
+                    .attr("d",function(d,i) { return orbitLineFunction(model.objects[i].osculatingOrbit) } );
+            } else {
+                bodies.select('path.osculatingOrbit').remove();
+            }
             
             // Centre of mass
             centreOfMassGroup = gEnter.append('g')
@@ -290,17 +305,9 @@ function nBodyChart()
 
 } // end of nBodyChart 
 
-
-var element = d3.select("#nbody");
-var canvasSize = d3.min([element.node().offsetWidth,1*window.innerHeight]);
-var myChart = nBodyChart()
-    .canvasWidth(canvasSize)
-    .canvasHeight(canvasSize)
-    .accelerationScale(50000)
-    .velocityScale(100);
-
 function initialize() {
     model.initialize();
+    positionVelocityToKepler(model.objects[1],model.objects[0]);
     setModel();
     setViewLock();
     d3.select("#nbody").datum(model).call(myChart);    
@@ -322,6 +329,14 @@ function animate() {
         }
     }
 }
+
+var element = d3.select("#nbody");
+var canvasSize = d3.min([element.node().offsetWidth,1*window.innerHeight]);
+var myChart = nBodyChart()
+    .canvasWidth(canvasSize)
+    .canvasHeight(canvasSize)
+    .accelerationScale(50000)
+    .velocityScale(100);
 
 initialize();
 animate();

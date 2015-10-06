@@ -36,6 +36,7 @@ function updateOutput() {
         d3.select('.' + currentOutput.property + '_value')
             .html(content);
     });
+    updateTable();
 };
 
 
@@ -210,7 +211,25 @@ div.append("label")
     .attr("for","setTrail")
     .html("Show trails") ;
 
-/*
+div.append("br");
+
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','showOsculatingOrbits')
+    .property('checked',model.showOsculatingOrbits)
+    .on("change",function() { 
+        value = d3.select('#showOsculatingOrbits').property("checked");
+        model.showOsculatingOrbits = value;
+        updateNeeded = true;
+    })
+
+div.append("label")
+    .style('display','inline')
+    .attr("for","showOsculatingOrbits")
+    .html("Show osculating orbits") ;
+
+div.append("br");
+
 div.append("input")
     .attr('type','checkbox')
     .attr('id','showSphereOfInfluence')
@@ -220,11 +239,11 @@ div.append("input")
         model.showSphereOfInfluence = value;
         updateNeeded = true;
     })
+
 div.append("label")
     .style('display','inline')
     .attr("for","showSphereOfInfluence")
     .html("Show sphere of influence") ;
-*/
 
 div.append("br");
 
@@ -261,35 +280,49 @@ div.append("label")
 
 
 addHeader(controllerContainer, { label: "Input" });
+model.initialize();
+setModel();
 
 var table = controllerContainer.append("table")
-    .classed("nbodypropertytable",true);
+     .classed("nbodypropertytable",true);
 
-var row = table.append("tr")
-row.append("td").html("Object name");
-row.append("td").html("Mass");
-row.append("td").html("<i>x</i>");
-row.append("td").html("<i>y</i>");
-row.append("td").html("<i>v<sub>x</sub></i>");
-row.append("td").html("<i>v<sub>y</sub></i>");
-
-model.objects.forEach( function(object) {
+function updateTable() {
+    var table = d3.select('.nbodypropertytable')
+    table.html("");    
     var row = table.append("tr")
-    row.append("td").html(object.name);
-    row.append("td").html(object.mass.toFixed(0));
-    row.append("td").html(object.position.e(1).toFixed(0));
-    row.append("td").html(object.position.e(2).toFixed(0));
-    row.append("td").html(object.velocity.e(1).toFixed(2));
-    row.append("td").html(object.velocity.e(2).toFixed(2));
-});
-centreOfMass();
-var row = table.append("tr")
-row.append("td").html("Barycenter");
-row.append("td").html(model.totalMass.toFixed(0));
-row.append("td").html(model.com.position.e(1).toFixed(0));
-row.append("td").html(model.com.position.e(2).toFixed(0));
-row.append("td").html(model.com.velocity.e(1).toFixed(2));
-row.append("td").html(model.com.velocity.e(1).toFixed(2));
+    row.append("td").html("Object name");
+    row.append("td").html("Mass");
+    row.append("td").html("<i>x</i>");
+    row.append("td").html("<i>y</i>");
+    row.append("td").html("<i>v<sub>x</sub></i>");
+    row.append("td").html("<i>v<sub>y</sub></i>");
+    row.append("td").html("<i>a</i>");
+    row.append("td").html("<i>e</i>");
+    
+    model.objects.forEach( function(object, index) {
+        var row = table.append("tr")
+        row.append("td").html(object.name);
+        row.append("td").html(object.mass.toFixed(0));
+        row.append("td").html(object.position.e(1).toFixed(0));
+        row.append("td").html(object.position.e(2).toFixed(0));
+        row.append("td").html(object.velocity.e(1).toFixed(2));
+        row.append("td").html(object.velocity.e(2).toFixed(2));
+        if (index > 0) {
+            row.append("td").html(object.semiMajorAxis.toFixed(2));
+            row.append("td").html(object.eccentricity.toFixed(2));
+        }
+       
+    });
+    var row = table.append("tr")
+    row.append("td").html("Barycenter");
+    row.append("td").html(model.totalMass.toFixed(0));
+    row.append("td").html(model.com.position.e(1).toFixed(0));
+    row.append("td").html(model.com.position.e(2).toFixed(0));
+    row.append("td").html(model.com.velocity.e(1).toFixed(2));
+    row.append("td").html(model.com.velocity.e(1).toFixed(2));
+    row.append("td").html("");
+    row.append("td").html("");
+}
 
 controllerContainer.append("br");
 

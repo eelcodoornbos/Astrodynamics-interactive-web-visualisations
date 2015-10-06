@@ -132,11 +132,10 @@ function conicSectionHodograph() {
                 .classed('trueAnomaly', true)
                 .attr("transform","rotate(-90,"+ xScale(0) + "," + yScale(data.hodographCenter) + ")");
 
-            gEnter.append("circle")
-                .classed('escapeVelocityHodograph', true)
+            gEnterClipped.append("circle")
+                .classed('escapeVelocity', true)
                 .attr("cx",xScale(0))
-                .attr("cy",yScale(0))
-                .style("visibility","hidden");
+                .attr("cy",yScale(0));
                 
             gEnter.append("path")
                 .classed('flightPathAngle', true);

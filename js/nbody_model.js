@@ -3,29 +3,74 @@ model = {
     maxZoomLevel: 10000,
     showTrails: true,
     showVelocities: true,
-    showAccelerations: true,
+    showAccelerations: false,
+    showOsculatingOrbits: false,
     showSphereOfInfluence: false,
     zeroObject: { position: Vector.Zero(3), velocity: Vector.Zero(3), trail: [] },
     referenceObject: {},
     objects: [
-        {   
+        {
             position:       Vector.create([ 0,   0, 0]),
             velocity:       Vector.create([ 0, 2.78, 0]),
             mass:           1500,
-            trail: [], 
+            trail: [],
             color: "orange",
             name: "Yellow sun"
         },
-        {   
-            mass:           200, 
+        {
+            mass:           200,
             position:       Vector.create([ 600,    0,   0]),
             velocity:       Vector.create([   0, 1.12,   0]),
+            trail: [],
+            color: "red",
+            name: "Red planet"
+        },
+        {
+            mass:           100,
+            position:       Vector.create([ 1400, -800,   0]),
+            velocity:       Vector.create([    0,    3.8,   0]),
+            trail: [],
+            color: "green",
+            name: "Green planet"
+        },
+
+        {
+            mass:           1e-9,
+            position:       Vector.create([-500,    0,    0]),
+            velocity:       Vector.create([   0,   1.2,    0]),
+            trail: [],
+            color: "purple",
+            name: "Purple spacecraft"
+        },
+        {
+            mass:           1e-9,
+            position:       Vector.create([440,    0,    0]),
+            velocity:       Vector.create([   0, -0.28,    0]),
+            trail: [],
+            color: "blue",
+            name: "Blue spacecraft"
+        },
+    ],
+/*
+    objects: [
+        {   
+            position:       Vector.create([ 0,   0, 0]),
+            velocity:       Vector.create([ 0,   0, 0]),
+            mass:           5000,
+            trail: [], 
+            color: "orange",
+            name: "Orange sun"
+        },
+        {   
+            position:       Vector.create([ 1200,    0,   0]),
+            velocity:       Vector.create([   0,    0,   0]),
+            mass:           100, 
             trail: [], 
             color: "red",
             name: "Red planet"
         },
         {   
-            mass:           100, 
+            mass:           0, 
             position:       Vector.create([ 1400, -800,   0]),
             velocity:       Vector.create([    0,    3.8,   0]),
             trail: [], 
@@ -34,7 +79,7 @@ model = {
         },        
 
         {   
-            mass:           1e-9, 
+            mass:           0, 
             position:       Vector.create([-500,    0,    0]), 
             velocity:       Vector.create([   0,   1.2,    0]),
             trail: [], 
@@ -42,24 +87,30 @@ model = {
             name: "Purple spacecraft"   
         },
         {   
-            mass:           1e-9, 
-            position:       Vector.create([440,    0,    0]), 
+            mass:           0, 
+            position:       Vector.create([400,    0,    0]), 
             velocity:       Vector.create([   0, -0.28,    0]),
             trail: [], 
             color: "blue",
             name: "Blue spacecraft"
-        },        
+        },
     ],
+*/
     com: {trail: []},
     time: 0,
     stepSize: 5,
     gravitationalConstant: 1,
     initialize: function initialize() {
-        model.referenceObject = model.zeroObject;
-        model.totalMass = 0;
-        model.objects.forEach( function(currentObject) {
-           model.totalMass += currentObject.mass;
+        model.referenceObject = model.com;
+        centreOfMass();
+//         setCircularVelocities();
+        model.objects.forEach( function(currentObject, index)
+        {
+            if (index > 0) {
+                positionVelocityToKepler(model.objects[index],model.objects[0]);
+            }
         });
+        model.objects[0].osculatingOrbit = [];    
     },
     eraseTrails: function() {
         model.objects.forEach( function(currentObject, index) {
@@ -69,6 +120,129 @@ model = {
         model.zeroObject.trail = [];
     }
 };
+
+function positionVelocityToKepler(object,centralbody) {
+    var mu = model.gravitationalConstant * (centralbody.mass + object.mass); 
+    var relativePosition = object.position.subtract(centralbody.position);
+    var r = relativePosition.modulus()
+    var relativeVelocity = object.velocity.subtract(centralbody.velocity);
+    var v = relativeVelocity.modulus();
+    var vsq = Math.pow(v,2);
+    var rdotv = relativePosition.dot(relativeVelocity);
+    var angularMomentumVector = relativePosition.cross(relativeVelocity);
+    var angularMomentum = angularMomentumVector.modulus();
+    
+    // Semi-major axis
+    var semiMajorAxis = r / (2 - r*vsq / mu); // (11.47)
+
+    // Eccentricity
+    var rvectore = relativePosition.multiply( vsq - (mu/r) );
+    var vvectore = relativeVelocity.multiply(rdotv);
+    var eccentricityVector = rvectore.subtract(vvectore).multiply(1/mu);
+    var eccentricity = eccentricityVector.modulus();
+    var eccentricitySq = Math.pow(eccentricity,2);
+    
+    // True anomaly
+    var trueAnomaly = Math.acos(eccentricityVector.dot(relativePosition)/(eccentricity*r));
+    if (rdotv < 0) { trueAnomaly = 2 * Math.PI - trueAnomaly; }
+    trueAnomaly = trueAnomaly % (Math.PI*2);
+    
+    // Inclination
+    var inclination = Math.atan2( Math.sqrt( Math.pow(angularMomentumVector.e(1),2) + 
+                                             Math.pow(angularMomentumVector.e(2),2) ),
+                                             angularMomentumVector.e(3));
+    
+    // Right Ascension of the ascending node
+    var raan = 0//Math.atan2(angularMomentumVector.e(1),-angularMomentumVector.e(2));
+//    var ascendingNodeVector = Vector.k.cross(angularMomentumVector);
+    
+    // Argument of perigee
+    var argumentOfPerigee;
+/*
+    if (Math.abs(eccentricityVector.e(3)) > 0) {
+        argumentOfPerigee = Math.acos(ascendingNodeVector.dot(eccentricityVector) / (ascendingNodeVector.modulus()*eccentricity));
+        if (eccentricityVector.e(3) < 0) { argumentOfPerigee = Math.PI * 2 - argumentofPerigee; }
+    } else { // Equatorial or 2D orbit
+*/
+        argumentOfPerigee = Math.atan2(eccentricityVector.e(2),eccentricityVector.e(1));
+        if (angularMomentumVector.e(3) < 0) { argumentOfPerigee = Math.PI * 2 - argumentOfPerigee; }
+//     }
+    argumentOfPerigee = argumentOfPerigee % (Math.PI*2);
+    
+    var newObject = object;
+    newObject.semiMajorAxis = semiMajorAxis;
+    newObject.eccentricity = eccentricity;
+    newObject.inclination = inclination;
+    newObject.raan = raan;
+    newObject.argumentOfPerigee = argumentOfPerigee;
+
+    newObject = keplerOrbit(newObject);
+    
+    return newObject;
+}
+
+function keplerOrbit(object) {
+    var argper = object.argumentOfPerigee;
+    var cosargper = Math.cos(argper);
+    var sinargper = Math.sin(argper);
+    var raan = object.raan;
+    var cosraan = Math.cos(raan);
+    var sinraan = Math.sin(raan);
+    var i = object.inclination;
+    var cosi = Math.cos(i);
+    var sini = Math.sin(i);
+    var semiMajorAxis = object.semiMajorAxis;
+    var eccentricity = object.eccentricity;
+
+    l1 = cosargper*cosraan - sinargper*sinraan*cosi;
+    m1 = cosargper*sinraan + sinargper*cosraan*cosi;
+    n1 = sinargper*sini;
+    l2 = -sinargper*cosraan - cosargper*sinraan*cosi;
+    m2 = -sinargper*sinraan + cosargper*cosraan*cosi;
+    n2 = cosargper*sini; 
+
+    var osculatingOrbit = [];
+    var theta = 0;
+    var steps = 200;
+    if (eccentricity > 1) {
+        var maxtheta = Math.acos(-1/eccentricity);
+    } else {
+        var maxtheta = Math.PI;
+    }
+    var mintheta = -maxtheta;
+    for (var i = 0; i <= steps; i++) {
+        osculatingOrbit[i] = {};
+        theta = mintheta + (i/steps) * (maxtheta - mintheta);
+        costheta = Math.cos(theta); // Speed this up by storing costheta and sintheta as arrays in memory?
+        sintheta = Math.sin(theta);
+        var r = semiMajorAxis * ( 1 - Math.pow(eccentricity,2) ) / ( 1 + eccentricity * costheta);
+        if (r > 2*model.zoomLevel || r < 0) { r = 2*model.zoomLevel; } 
+        var x = r * (l1 * costheta + l2 * sintheta);
+        var y = r * (m1 * costheta + m2 * sintheta);
+        var z = r * (n1 * costheta + n2 * sintheta);
+        osculatingOrbit[i] = Vector.create([x,y,z]).subtract(model.referenceObject.position.subtract(model.objects[0].position));
+    }
+    newObject = object;
+    object.osculatingOrbit = osculatingOrbit;
+    return newObject;
+}
+
+function computeTwoBodyOrbitParameters() {
+    var mu = model.gravitationalConstant*model.objects[0].mass;
+    model.objects.forEach( function(currentObject, index) {
+        if (index > 0) {
+            model.objects[index].angularMomentumVector = currentObject.position.cross(currentObject.velocity);
+            model.objects[index].angularMomentum = model.objects[index].angularMomentumVector.modulus();
+            model.objects[index].energy = 0.5 * Math.pow(currentObject.velocity.modulus(),2) - 
+                mu / currentObject.position.modulus();
+            model.objects[index].semiMajorAxis = -mu / (2*model.objects[index].energy);
+            var rvectore = currentObject.position.multiply( Math.pow(currentObject.velocity.modulus(),2) - (mu/currentObject.position.modulus()) );
+            var vvectore = currentObject.velocity.multiply(currentObject.position.dot(currentObject.velocity));
+            model.objects[index].eccentricityVector = rvectore.subtract(vvectore).multiply(1/mu);
+            model.objects[index].eccentricity = model.objects[index].eccentricityVector.modulus();
+        }
+    });
+}
 
 function computeNextTimeStep() {
     var yarray = [];
@@ -82,20 +256,42 @@ function computeNextTimeStep() {
     });
     var y0 = Vector.create(yarray);            
     var y = astro.rungekutta4_singlestep(ode_nbody, y0, model.time, model.stepSize);
-    model.objects.forEach( function(currentObject, index) 
+    model.objects.forEach( function(currentObject, index)
     {
         currentObject.position = Vector.create([ y.e(index*6 + 1), y.e(index*6 + 2), y.e(index*6 + 3) ]);    
         currentObject.velocity = Vector.create([ y.e(index*6 + 4), y.e(index*6 + 5), y.e(index*6 + 6) ]);
+        if (index > 0) {
+            positionVelocityToKepler(model.objects[index],model.objects[0]);
+        }
     });
     model.nextTimeStepComputed = true;
+    model.objects[0].osculatingOrbit = [];
+}
+
+function setCircularVelocities() {
+    model.objects.forEach( function(currentObject, index) {
+       if (index != 0) {
+           var radiusvec = currentObject.position.subtract(model.objects[0].position);
+           var vcirc = Math.sqrt((model.objects[0].mass+currentObject.mass)*model.gravitationalConstant/radiusvec.modulus());
+           var vcircunitvec = Vector.k.cross(radiusvec).toUnitVector();
+           model.objects[index].velocity = vcircunitvec.multiply(vcirc).add(model.objects[0].velocity);
+       } 
+    });
 }
 
 function setModel() {
-
     centreOfMass();
     acceleration();
     displayPositionVelocity();    
     displayTrail();
+    model.objects.forEach( function(currentObject, index)
+    {
+        if (index > 0) {
+            positionVelocityToKepler(model.objects[index],model.objects[0]);
+        }
+    });
+    
+    positionVelocityToKepler(model.objects[1],model.objects[0]); 
     
     // Add the current coordinates to the trail
     if (model.showTrails && model.nextTimeStepComputed) 
@@ -129,16 +325,24 @@ function displayTrail() {
 function centreOfMass() {
     var positionTimesMassSum = Vector.Zero(3);
     var velocityTimesMassSum = Vector.Zero(3);
-    model.objects.forEach( function(object, index) {
-        var positionTimesMass = object.position.multiply(object.mass);
-        var velocityTimesMass = object.velocity.multiply(object.mass);
+
+    model.totalMass = 0;
+
+    model.objects.forEach( function(currentObject, index) 
+    {        
+        var positionTimesMass = currentObject.position.multiply(currentObject.mass);
+        var velocityTimesMass = currentObject.velocity.multiply(currentObject.mass);
         positionTimesMassSum = positionTimesMassSum.add(positionTimesMass);
         velocityTimesMassSum = velocityTimesMassSum.add(velocityTimesMass);
+
+        model.totalMass += currentObject.mass;
     });
+    
     model.com.position = positionTimesMassSum.multiply(1/model.totalMass);
     model.com.velocity = velocityTimesMassSum.multiply(1/model.totalMass);
     model.comvx = model.com.velocity.e(1);
     model.comvy = model.com.velocity.e(2);
+    
 };
 
 function acceleration() {
@@ -214,4 +418,3 @@ function ode_nbody(t,y)
     }
     return Vector.create(farray);
 };
-model.initialize();

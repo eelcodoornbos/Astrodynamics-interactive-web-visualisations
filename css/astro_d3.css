@@ -276,6 +276,12 @@ line.velocityRadius {
     stroke-width: 1px;
 }
 
+.escapeVelocity {
+    fill: none;
+    stroke: gray;
+    stroke-width: 1px;
+}
+
 .satCircle {
     fill: gray;
     stroke: white;
@@ -288,10 +294,9 @@ line.velocityRadius {
 }
 
 .nBody {
-    fill: #ddd;
-    stroke: #888;
-    stroke-width: 1px;
-    opacity: 0.8;
+    opacity: 1.0;
+    fill: none;
+    stroke: none;
 }
 
 line.orbitAxisX, line.orbitAxisY {
@@ -364,6 +369,12 @@ g.tick line {
     fill: none;
     stroke-width: 3px;
     opacity: 0.3;
+    stroke-dasharray: 3,3;    
+}
+.osculatingOrbit {
+    fill: none;
+    stroke-width: 1.5 px;
+    opacity: 0.8;
 }
 
 input[type="radio"] {
