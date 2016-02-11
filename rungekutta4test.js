@@ -4,7 +4,7 @@ model = {
     
     duration: 1e30,
     
-    y0: Vector.create([0, 6878, 6878, 7.8, 0, 0]),
+    y0: Vector.create([-2384.46, 5729.01, 3050.46, -7.36138, -2.98997, 1.64354]),
     
     time: 0,
     
@@ -26,11 +26,20 @@ model = {
 view = {
         
     cameraonsat: false,
-    linelength: 10000,
+    cameraonh: false,
+    cameraone: false,
+    linelength: 150,
     satelliteColor: 0x5080a0,
+
+    eccentricityVector: new THREE.Line( new THREE.Geometry(), 
+                        new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 3 } )),
+
+    angularMomentumVector: new THREE.Line( new THREE.Geometry(), 
+                           new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 3 } )),
 
     orbitLine: new THREE.Line( new THREE.Geometry(), 
                                new THREE.LineBasicMaterial( { color: 0x5080a0, linewidth: 1.5 } )),
+  
     groundTrackLine: new THREE.Line( new THREE.Geometry(), 
                                      new THREE.LineBasicMaterial( { color: 0xcc6666,linewidth: 3 } )),
     
@@ -84,46 +93,68 @@ view = {
             
             // Integrate the orbit one time step
             model.time += model.stepsize;
-            y = astro.rungekutta4_singlestep(astro.ode_2body, model.y0, model.time, model.stepsize);
+            y = astro.rungekutta4_singlestep(astro.ode_2body_j2, model.y0, model.time, model.stepsize);
 
-            position = new THREE.Vector3(y.e(1)/1e3,y.e(2)/1e3,y.e(3)/1e3);
-            unitposition = position.clone().normalize();
+            position = new THREE.Vector3(y.e(1),y.e(2),y.e(3));
+            positionViewUnits = new THREE.Vector3(y.e(1)/1e3,y.e(2)/1e3,y.e(3)/1e3);
+            velocity = new THREE.Vector3(y.e(4),y.e(5),y.e(6));
+            
+            var angularMomentumVector = new THREE.Vector3()
+            angularMomentumVector.crossVectors( position, velocity );
+
+            var velocitySquared = velocity.lengthSq();
+            var muoverr = astro.earth.gravitationalParameter / position.length();
+            var rdotv = position.dot(velocity);
+            var eccentricityVector = new THREE.Vector3()
+            eccentricityVector = position.clone().multiplyScalar(velocitySquared-muoverr).sub(velocity.clone().multiplyScalar(rdotv));
+//            unitposition = position.clone().normalize();
 
             if (view.cameraonsat) {
-                //scene.remove(satellite);           
-                cameraPosition = position.clone().add(position.clone().setLength(4));
+                //scene.remove(satellite);
+                cameraPosition = positionViewUnits.clone().add(positionViewUnits.clone().setLength(4));
                 camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+            } else if (view.cameraonh) {
+              cameraPosition = angularMomentumVector.clone().normalize().multiplyScalar(20)
+              camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
             } else {
-                controls.target = new THREE.Vector3(0,0,0);
+              controls.target = new THREE.Vector3(0,0,0);
             }
-            
-            satellite.position.set(position.x, position.y, position.z);
+
+            satellite.position.set(positionViewUnits.x, positionViewUnits.y, positionViewUnits.z);
             model.y0 = y.dup();
             
             view.reorientSatellite();
                         
             // Update orbit trail line
             view.orbitLine.geometry.vertices.push(view.orbitLine.geometry.vertices.shift());
-            view.orbitLine.geometry.vertices[view.linelength - 1] = position;
+            view.orbitLine.geometry.vertices[view.linelength - 1] = positionViewUnits;
             view.orbitLine.geometry.verticesNeedUpdate = true;
             
             // Update line from centre of Earth to satellite
-            radiusLine.geometry.vertices[1] = position;
+            radiusLine.geometry.vertices[1] = positionViewUnits;
             radiusLine.geometry.verticesNeedUpdate = true;
+
+            // Update eccentricity and angular momentum vectors
+            view.angularMomentumVector.geometry.vertices[1] = ( angularMomentumVector.normalize().multiplyScalar(10) );
+            view.angularMomentumVector.geometry.verticesNeedUpdate = true;
+
+            view.eccentricityVector.geometry.vertices[1] = ( eccentricityVector.normalize().multiplyScalar(10) );
+            view.eccentricityVector.geometry.verticesNeedUpdate = true;
+
 
             earthRotationAngle = model.time/86400*2*Math.PI;
 
             // Update ground track
-            groundtrackposition = position.clone().normalize().multiplyScalar(6.39);
-            view.groundTrackLine.geometry.vertices.push(view.groundTrackLine.geometry.vertices.shift());
-            view.groundTrackLine.geometry.vertices[view.linelength - 1] = 
-                new THREE.Vector3( (groundtrackposition.x*Math.cos(-earthRotationAngle) + groundtrackposition.z*Math.sin(-earthRotationAngle) ),
-                                    groundtrackposition.y,
-                                   (-1*groundtrackposition.x*Math.sin(-earthRotationAngle) + groundtrackposition.z*Math.cos(-earthRotationAngle) ) );
-            view.groundTrackLine.geometry.verticesNeedUpdate = true;
+            // groundtrackposition = position.clone().normalize().multiplyScalar(6.39);
+            // view.groundTrackLine.geometry.vertices.push(view.groundTrackLine.geometry.vertices.shift());
+            // view.groundTrackLine.geometry.vertices[view.linelength - 1] =
+            //     new THREE.Vector3( (groundtrackposition.x*Math.cos(-earthRotationAngle) + groundtrackposition.z*Math.sin(-earthRotationAngle) ),
+            //                         groundtrackposition.y,
+            //                        (-1*groundtrackposition.x*Math.sin(-earthRotationAngle) + groundtrackposition.z*Math.cos(-earthRotationAngle) ) );
+            // view.groundTrackLine.geometry.verticesNeedUpdate = true;
 
             // Spin the Earth            
-            earth.rotation.set(0,earthRotationAngle,0);
+            earth.rotation.set(0,0,earthRotationAngle);
     
         } else {
         }
@@ -143,6 +174,7 @@ view = {
         
         // Camera
         camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 5000);
+        camera.up.set( 0, 0, 1 );        
         camera.position.set(30, 15, 30);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
      
@@ -151,7 +183,7 @@ view = {
         scene.add( light );
                
         var light = new THREE.PointLight( 0xa0a0a0, 5.5, 30000 );
-        light.position.set( 0, 0, 25000 );
+        light.position.set( 0, 25000, 0 );
         scene.add( light );
         
         // Controls    
@@ -182,6 +214,12 @@ view = {
             view.groundTrackLine.geometry.vertices.push( gtposition );
         }
         scene.add(view.orbitLine);
+        
+        view.angularMomentumVector.geometry.vertices[0] = ( new THREE.Vector3(0, 0, 0) );
+        view.eccentricityVector.geometry.vertices[0] = ( new THREE.Vector3(0, 0, 0) );
+        
+        scene.add(view.eccentricityVector);
+        scene.add(view.angularMomentumVector);
     },
     
     initialize_satellite: function() {    
@@ -198,28 +236,61 @@ view = {
 
         scene.add(radiusLine);
     },
+
+    ellipsoid: function ellipsoid() {
+        var latitudeBands=64,longitudeBands=64,a=1,b=0.6,c=1,size=6.378;
+        for (var latNumber=0; latNumber <= latitudeBands; latNumber++) 
+        {
+                var theta = (latNumber *      Math.PI *2/ latitudeBands);
+                var sinTheta = Math.sin(theta);
+                var cosTheta = Math.cos(theta);
+                
+                 for (var longNumber=0; longNumber <= longitudeBands; longNumber++) 
+                 {
+                    var phi = (longNumber  *2* Math.PI / longitudeBands);
+                    var sinPhi = Math.sin(phi);
+                    var cosPhi = Math.cos(phi);
+
+                    var x = a*cosPhi * cosTheta ;
+                    var y = b*cosTheta*sinPhi;
+                    var z = c*sinTheta;
+                    ellipsoidgeometry.vertices.push(new THREE.Vector3( x*size,y*size,z*size));
+                }
+        }
+        for (var latNumber = 0; latNumber < latitudeBands; latNumber++) {
+          for (var longNumber = 0; longNumber < longitudeBands; longNumber++) {
+            var first = (latNumber * (longitudeBands + 1)) + longNumber;
+            var second = first + longitudeBands + 1;
+            ellipsoidgeometry.faces.push(new THREE.Face3(first,second,first+1));
+            ellipsoidgeometry.faces.push(new THREE.Face3(second,second+1,first+1));
+          }
+        }
+    },
      
     initialize_earth: function() {    
         // Earth    
         earth = new THREE.Object3D();
         var map = THREE.ImageUtils.loadTexture("map.png");
-        var material = new THREE.MeshLambertMaterial({ map: map, transparent: true, opacity: 1, ambient: 0xdddddd });
+        var material = new THREE.MeshLambertMaterial({ map: map, transparent: true, opacity: 1.0, ambient: 0xdddddd });
         var geometry = new THREE.SphereGeometry( 6.378, 64, 64 );
+        // ellipsoidgeometry = new THREE.Geometry();
+        // view.ellipsoid();
         earthsphere = new THREE.Mesh( geometry, material );
+        earthsphere.rotation.set(0.5*Math.PI,0,0)
         earth.add( earthsphere );
-        earth.add(view.groundTrackLine);
+//        earth.add(view.groundTrackLine);
         scene.add(earth);
     },
     
     initialize_gridlines: function() {
         for (var imeridian = 0; imeridian < 180; imeridian +=30) {
             var geometry = new THREE.Geometry();
-            var material = new THREE.LineBasicMaterial( { color: 0x404040, linewidth: 0.5 } );
+            var material = new THREE.LineBasicMaterial( { color: 0x404040, opacity: 0.5, linewidth: 0.5 } );
             for (var i = 0; i <= 64; i++) {
                 geometry.vertices.push( new THREE.Vector3( 
-                    6.39*Math.sin(i/64*2*Math.PI)*Math.cos(imeridian/180*Math.PI), 
-                    6.39*Math.cos(i/64*2*Math.PI), 
-                    -6.39*Math.sin(i/64*2*Math.PI)*Math.sin(imeridian/180*Math.PI) 
+                    6.39*Math.sin(i/64*2*Math.PI)*Math.cos(imeridian/180*Math.PI),
+                    -6.39*Math.sin(i/64*2*Math.PI)*Math.sin(imeridian/180*Math.PI),
+                    6.39*Math.cos(i/64*2*Math.PI)
                 ) );
             }
             gridline = new THREE.Line (geometry, material);
@@ -231,8 +302,8 @@ view = {
             for (var i = 0; i <= 64; i++) {
                 geometry.vertices.push( new THREE.Vector3( 
                     6.39*Math.sin(i/64*2*Math.PI)*Math.cos(iparallel/180*Math.PI), 
-                    6.39*Math.sin(iparallel/180*Math.PI),
-                    6.39*Math.cos(i/64*2*Math.PI)*Math.cos(iparallel/180*Math.PI) 
+                    6.39*Math.cos(i/64*2*Math.PI)*Math.cos(iparallel/180*Math.PI),
+                    6.39*Math.sin(iparallel/180*Math.PI)
                 ) );
             }
             gridline = new THREE.Line (geometry, material);
@@ -255,6 +326,8 @@ view = {
 var gui = new dat.GUI();
 gui.add(model,"stepsize",1/60,180);
 gui.add(view,"cameraonsat");
+gui.add(view,"cameraonh");
+gui.add(astro,"j2factor",0,100)
 /*
 gui.add(text, 'speed', -5, 5);
 gui.add(text, 'displayOutline');

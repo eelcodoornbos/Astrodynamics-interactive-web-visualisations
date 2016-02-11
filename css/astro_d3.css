@@ -369,8 +369,17 @@ g.tick line {
     fill: none;
     stroke-width: 3px;
     opacity: 0.3;
-    stroke-dasharray: 3,3;    
+   stroke-dasharray: 3,3;   
 }
+
+.threebodytrail {
+    fill: none;
+    stroke-width: 2px;
+    opacity: 0.3;
+    stroke-dasharray: none;
+}
+
+
 .osculatingOrbit {
     fill: none;
     stroke-width: 1.5 px;
@@ -402,8 +411,16 @@ input.slidertextfield {
 /*     shape-rendering; crispEdges; */
     stroke: black;
     stroke-width: 1px;
-    opacity: 0.1;
+    opacity: 0.3;
 }
+
+/*
+.rotatingGridLines .verticalGrid, .rotatingGridLines .horizontalGrid {
+    stroke-width: 2px;
+    stroke: black;
+    opacity: 0.5;
+}
+*/
 
 table.nbodypropertytable {
     font-family: sans-serif;

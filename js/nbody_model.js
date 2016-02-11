@@ -11,29 +11,29 @@ model = {
     objects: [
         {
             position:       Vector.create([ 0,   0, 0]),
-            velocity:       Vector.create([ 0, 2.78, 0]),
-            mass:           1500,
+            velocity:       Vector.create([ 0, 0, 0]),
+            mass:           2000,
             trail: [],
             color: "orange",
             name: "Yellow sun"
         },
         {
-            mass:           200,
-            position:       Vector.create([ 600,    0,   0]),
-            velocity:       Vector.create([   0, 1.12,   0]),
+            mass:           500,
+            position:       Vector.create([ 1200,    0,   0]),
+            velocity:       Vector.create([   0,   1.5,   0]),
             trail: [],
             color: "red",
             name: "Red planet"
         },
         {
             mass:           100,
-            position:       Vector.create([ 1400, -800,   0]),
-            velocity:       Vector.create([    0,    3.8,   0]),
+            position:       Vector.create([ 0, 500,   0]),
+            velocity:       Vector.create([   -2, 0,   0]),
             trail: [],
             color: "green",
             name: "Green planet"
         },
-
+/*
         {
             mass:           1e-9,
             position:       Vector.create([-500,    0,    0]),
@@ -43,13 +43,15 @@ model = {
             name: "Purple spacecraft"
         },
         {
-            mass:           1e-9,
-            position:       Vector.create([440,    0,    0]),
-            velocity:       Vector.create([   0, -0.28,    0]),
+            mass:           5,
+            position:       Vector.create([ 1400,    0,    0]),
+            velocity:       Vector.create([    0,   0.2,    0]),
             trail: [],
             color: "blue",
             name: "Blue spacecraft"
         },
+
+*/
     ],
 /*
     objects: [

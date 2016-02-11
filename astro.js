@@ -1,12 +1,10 @@
 astro = (function() {
-
 	var myobject = {};
 
 	CentralBody = function(gravitationalParameter, radius) {
 		this.gravitationalParameter = gravitationalParameter;
 		this.radius = radius;
 	}
-	
 	myobject.earth = new CentralBody(398600.44189, 6378.1);
 	myobject.mars = new CentralBody( 42823.1, 3390.0);
 	// myobject.moon = ...
@@ -219,6 +217,28 @@ astro = (function() {
         return Vector.create(farray);
     };
 
+    myobject.ode_2body_j2 = function(t,y) { // note that the time t is not used to evaluate the acceleration here
+        if (y.dimensions() != 6) { console.log("ode_orbit: Expected 6 elements in vector"); }
+        var farray = [];
+        var r = Math.sqrt(Math.pow(y.e(1),2)+Math.pow(y.e(2),2)+Math.pow(y.e(3),2));
+        var mu, twobodyfactor;
+        mu = 398600.44189;
+        J2 = 0.00180263*astro.j2factor;
+        Re = 6378.14;
+        twobodyfactor = - mu / Math.pow(r,3);
+        j2factorx = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(1) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)
+        j2factory = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(2) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)        
+        j2factorz = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(3) * (5.0 * Math.pow(y.e(3)/r,2) - 3.0)
+        farray[0] = y.e(4);
+        farray[1] = y.e(5);
+        farray[2] = y.e(6);
+        farray[3] = twobodyfactor * y.e(1) + j2factorx;
+        farray[4] = twobodyfactor * y.e(2) + j2factory;
+        farray[5] = twobodyfactor * y.e(3) + j2factorz;
+        return Vector.create(farray);
+    };
+
+
 	return myobject;
 }());
 
@@ -235,3 +255,4 @@ String.prototype.toHHMMSS = function () {
     var time    = hours+'h '+minutes+'m';
     return time;
 }
+astro.j2factor = 10;

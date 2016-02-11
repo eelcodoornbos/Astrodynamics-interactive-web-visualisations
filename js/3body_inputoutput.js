@@ -180,6 +180,37 @@ addHeader(controllerContainer, { label: "View settings" });
 var div = controllerContainer.append('div');
 div.append("input")
     .attr('type','checkbox')
+    .attr('id','showHillSurface')
+    .property('checked',model.showHillSurface)
+    .on("change",function() { 
+        value = d3.select('#showHillSurface').property("checked");
+        model.showHillSurface = value;
+        updateNeeded = true;
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","showHillSurface")
+    .html("Show zero velocity curves") ;
+
+var div = controllerContainer.append('div');
+div.append("input")
+    .attr('type','checkbox')
+    .attr('id','showLagrangePoints')
+    .property('checked',model.showLagrangePoints)
+    .on("change",function() { 
+        value = d3.select('#showLagrangePoints').property("checked");
+        model.showLagrangePoints = value;
+        updateNeeded = true;
+    })
+div.append("label")
+    .style('display','inline')
+    .attr("for","showLagrangePoints")
+    .html("Show Lagrange points") ;
+
+
+var div = controllerContainer.append('div');
+div.append("input")
+    .attr('type','checkbox')
     .attr('id','setTrail')
     .property('checked',model.showTrails)
     .on("change",function() { 
@@ -276,11 +307,11 @@ var selectRefFrame = controllerContainer.append("select")
     .attr('id','selectRefFrame')
     .on("input",function() { setRefFrame() });
 selectRefFrame.append("option")
-    .attr("value","corotating")
-    .html("Corotating"); 
-selectRefFrame.append("option")
     .attr("value","inertial")
     .html("Inertial");
+selectRefFrame.append("option")
+    .attr("value","corotating")
+    .html("Corotating"); 
 
 controllerContainer.append("br")
 controllerContainer.append("label")
@@ -339,7 +370,7 @@ addSlider(controllerContainerTop,
 addHeader(controllerContainer, { label: "Input" });
 
 addSlider(controllerContainer, 
-    { label: "Normalized mass of moon", 
+    { label: "Normalized mass of red object", 
       property: "mu", 
       prefix: "<i>&mu;</i> = ",
       multiplier: 1,                  

@@ -1,5 +1,5 @@
 view = {
-    refFrame: "corotating"
+    refFrame: "inertial"
 };
 model.trailRefObject = model.zeroObject;
 model.viewRefObject = model.zeroObject;
@@ -15,8 +15,8 @@ function nBodyChart()
     var yScale = d3.scale.linear();
     var velocityScale = 0.5;
     var accelerationScale = 1;
-    var radiusScale = 0.1;
-    var comRadius = 4;
+    var radiusScale = 0.15;
+    var comRadius = 5;
     
     // Chart function that can be called on a DOM element to draw the SVG chart
     function chart(selection) {
@@ -106,15 +106,17 @@ function nBodyChart()
             svg.select('.gridLines.vertical').call(verticalGridLines);
 
             gCorotate = gPlotArea.append("svg:g").classed("corotate", true);
+            gCorotate.append("svg:g").classed("lagrangePoints", true);
+            gCorotate.append("svg:g").classed("zeroVelocityCurve", true);
 
             // Grid
             var horizontalGridLines = gridLines().orient("horizontal").ticks(1).xScale(xScale).yScale(yScale);
             var verticalGridLines = gridLines().orient("vertical").ticks(1).xScale(xScale).yScale(yScale);
 
             gCorotate.append('svg:g').classed('rotatingGridLines horizontal', true);
-            gCorotate.append('svg:g').classed('rotatingGridLines vertical', true);
+//            gCorotate.append('svg:g').classed('rotatingGridLines vertical', true);
             svg.select('.rotatingGridLines.horizontal').call(horizontalGridLines);
-            svg.select('.rotatingGridLines.vertical').call(verticalGridLines);
+//            svg.select('.rotatingGridLines.vertical').call(verticalGridLines);
 
 
             // Sphere of influence
@@ -172,48 +174,56 @@ function nBodyChart()
             }
             
             // Zero-velocity contour / surface of Hill            
-            compoundContourPath = "";
-            model.currentContours.forEach( function(contourdata,index) {
-                var contourPath = d3.svg.line();
-                contourPath
-                    .x(function(d) { return xScale(d.x) } )
-                    .y(function(d) { return yScale(d.y) } );
-                compoundContourPath = compoundContourPath + contourPath(contourdata);
-            });
+            if (model.showHillSurface) {
+                compoundContourPath = "";
+                model.currentContours.forEach( function(contourdata,index) {
+                    var contourPath = d3.svg.line();
+                    contourPath
+                        .x(function(d) { return xScale(d.x) } )
+                        .y(function(d) { return yScale(d.y) } );
+                    compoundContourPath = compoundContourPath + contourPath(contourdata);
+                });
+                
+                svg.select('.zeroVelocityCurve')
+                    .selectAll(".zeroVelocityContourPath")            
+                    .data([compoundContourPath])
+                    .enter().append("path")
+                        .classed('zeroVelocityContourPath', true)
+                        .style("fill","black")
+                        .style("fill-opacity",0.05)
+                        .style("fill-rule","evenodd")
+                        .style("stroke","gray")
+                        .style("stroke-width","1px");
+                svg.selectAll('.zeroVelocityContourPath')
+                         .attr("d", compoundContourPath );
+                svg.selectAll('.zeroVelocityContourPath')
+                    .data([compoundContourPath])
+                    .exit()
+                    .remove();
+            } else {
+                svg.selectAll('.zeroVelocityContourPath')
+                    .remove();                
+            }
             
-            gCorotate.append("svg:g").classed("zeroVelocityCurve", true)
-            svg.select('.zeroVelocityCurve')
-                .selectAll(".zeroVelocityContourPath")            
-                .data([compoundContourPath])
-                .enter().append("path")
-                    .classed('zeroVelocityContourPath', true)
-                    .style("fill","black")
-                    .style("fill-opacity",0.05)
-                    .style("fill-rule","evenodd")
-                    .style("stroke","gray")
-                    .style("stroke-width","1px");
-            svg.selectAll('.zeroVelocityContourPath')
-                     .attr("d", compoundContourPath );
-            svg.selectAll('.zeroVelocityContourPath')
-                .data([compoundContourPath])
-                .exit()
-                .remove();
-
             // Lagrange points
-            gCorotate.append("svg:g").classed("lagrangePoints", true)
-                .selectAll(".lagrangePoint")
-                .data(model.lagrangePoints)
-                .enter()
-                .append("svg:circle")
-                    .classed("lagrangePoint", true)
-                    .style("fill","gray")
-                    .style("stroke","black")
-                    .style("stroke-width","1px")
-                    .attr("r","2px");                    
-            svg.selectAll(".lagrangePoint").data(model.lagrangePoints)
-                .attr("cx", function(d) { return xScale(d.position.e(1)) })
-                .attr("cy", function(d) { return yScale(d.position.e(2)) });
-            svg.selectAll(".lagrangePoint").data(model.lagrangePoints).exit().remove();
+            if (model.showLagrangePoints) {
+                svg.select('.lagrangePoints')
+                    .selectAll(".lagrangePoint")
+                    .data(model.lagrangePoints)
+                    .enter()
+                    .append("svg:circle")
+                        .classed("lagrangePoint", true)
+                        .style("fill","gray")
+                        .style("stroke","black")
+                        .style("stroke-width","1px")
+                        .attr("r","2px");                    
+                svg.selectAll(".lagrangePoint").data(model.lagrangePoints)
+                    .attr("cx", function(d) { return xScale(d.position.e(1)) })
+                    .attr("cy", function(d) { return yScale(d.position.e(2)) });
+                //svg.selectAll(".lagrangePoint").data(model.lagrangePoints).exit().remove();
+            } else {
+                svg.selectAll(".lagrangePoint").remove();                
+            }
                         
             // Bodies
             var body = gCorotate.append("svg:g").classed("bodies", true)
@@ -224,8 +234,8 @@ function nBodyChart()
                 .classed('nBody', true);
             body.append('circle')
                 .attr("fill", function(d,i) { return d.color})
-                .attr("fill-opacity","0.5")
-                .attr("stroke","none");
+                .attr("fill-opacity","0.25")
+                .attr("stroke", function(d,i) { return d.color});
 //                .call(dragbody);
             bodies = svg.selectAll('.nBody').data(model.objects);
             bodies.select('circle').transition().duration(transitionDuration)
@@ -259,7 +269,7 @@ function nBodyChart()
                 .y( function(d,i) { return yScale( d.e(2) - model.trailRefObject.inertialTrail[i].subtract(trailOffset).e(2)  ); } )            
             
             body.append('path')
-                .classed('trail', true)
+                .classed('threebodytrail trail', true)
                 .attr("stroke",function(d,i) { return model.objects[i].color });
 
             if ( (view.refFrame === "inertial" && !model.corotateTrail) || (view.refFrame === "corotating" && model.corotateTrail) ) {
