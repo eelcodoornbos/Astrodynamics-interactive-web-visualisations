@@ -99,7 +99,7 @@ astro = (function() {
 		return orbitcoords;
 	}
 	
-	function trueAnomaly_from_meanAnomaly(meanAnomaly, eccentricity) {
+	myobject.trueAnomaly_from_meanAnomaly = function trueAnomaly_from_meanAnomaly(meanAnomaly, eccentricity) {
 	  // Find the true anomaly as a function of the mean anomaly for an orbit in the 2-body problem
 	  var theta_rad;
 	  var eccentricAnomaly_new, eccentricAnomaly_old;
@@ -220,21 +220,50 @@ astro = (function() {
     myobject.ode_2body_j2 = function(t,y) { // note that the time t is not used to evaluate the acceleration here
         if (y.dimensions() != 6) { console.log("ode_orbit: Expected 6 elements in vector"); }
         var farray = [];
-        var r = Math.sqrt(Math.pow(y.e(1),2)+Math.pow(y.e(2),2)+Math.pow(y.e(3),2));
+        var positionVector = Vector.create([y.e(1),y.e(2),y.e(3)]);
+        var velocityVector = Vector.create([y.e(4),y.e(5),y.e(6)]);
+        var r = positionVector.modulus();
         var mu, twobodyfactor;
         mu = 398600.44189;
-        J2 = 0.00180263*astro.j2factor;
         Re = 6378.14;
+        var height = r-Re;
+        
+        if (height < 0) { return Vector.create([0, 0, 0, 0, 0, 0]); } // Set velocity and acc to zero when crashed.
+        
+        // Two body term
         twobodyfactor = - mu / Math.pow(r,3);
-        j2factorx = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(1) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)
-        j2factory = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(2) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)        
-        j2factorz = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(3) * (5.0 * Math.pow(y.e(3)/r,2) - 3.0)
+        // J2 term
+        if (model.applyJ2) {
+          J2 = 0.00180263*model.j2factor;
+          j2_x = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(1) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)
+          j2_y = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(2) * (5.0 * Math.pow(y.e(3)/r,2) - 1.0)        
+          j2_z = (3.0 / 2.0) * ( J2 * mu * Math.pow(Re,2) / Math.pow(r,5) ) * y.e(3) * (5.0 * Math.pow(y.e(3)/r,2) - 3.0)
+        } else {
+          j2_x = 0; j2_y = 0; j2_z = 0;
+        }
+        
+        // Drag term
+        if (model.applyDrag) {
+          var ballisticCoefficient = 2.5 * 1 / 500;
+          var scaleHeight = 20;
+          var rho0 = 1;
+          var h0 = 0;
+          var rho = model.surfaceDensity * Math.exp( -1*(height-h0)/model.scaleHeight );
+          var earthAngularVelocity = Vector.create([0.0, 0.0, 0.7292115e-4]);
+          var corotationVelocity =  earthAngularVelocity.cross(positionVector);
+          var relativeVelocity = velocityVector.multiply(-1).add(corotationVelocity.multiply(1e-3));
+          var velocitySquared = Math.pow(relativeVelocity.modulus(),2);
+          var dragVector = relativeVelocity.toUnitVector().multiply(model.ballisticCoefficient * 0.5 * rho * velocitySquared);      
+        } else {
+          dragVector = Vector.create([0,0,0]);
+        }
+        // Construct the acceleration
         farray[0] = y.e(4);
         farray[1] = y.e(5);
         farray[2] = y.e(6);
-        farray[3] = twobodyfactor * y.e(1) + j2factorx;
-        farray[4] = twobodyfactor * y.e(2) + j2factory;
-        farray[5] = twobodyfactor * y.e(3) + j2factorz;
+        farray[3] = twobodyfactor * y.e(1) + j2_x + dragVector.e(1);
+        farray[4] = twobodyfactor * y.e(2) + j2_y + dragVector.e(2);
+        farray[5] = twobodyfactor * y.e(3) + j2_z + dragVector.e(3);
         return Vector.create(farray);
     };
 
@@ -255,4 +284,3 @@ String.prototype.toHHMMSS = function () {
     var time    = hours+'h '+minutes+'m';
     return time;
 }
-astro.j2factor = 10;
