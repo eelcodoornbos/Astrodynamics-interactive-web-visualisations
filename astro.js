@@ -257,10 +257,15 @@ astro = (function() {
         } else {
           dragVector = Vector.create([0,0,0]);
         }
+        
+
+        var deltaV = Vector.create([0,0,0]);
+        
         // Construct the acceleration
-        farray[0] = y.e(4);
-        farray[1] = y.e(5);
-        farray[2] = y.e(6);
+        // console.log(y.e(4), deltaV.e(1));
+        farray[0] = y.e(4) + deltaV.e(1);
+        farray[1] = y.e(5) + deltaV.e(2);
+        farray[2] = y.e(6) + deltaV.e(3);
         farray[3] = twobodyfactor * y.e(1) + j2_x + dragVector.e(1);
         farray[4] = twobodyfactor * y.e(2) + j2_y + dragVector.e(2);
         farray[5] = twobodyfactor * y.e(3) + j2_z + dragVector.e(3);
