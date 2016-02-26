@@ -7,6 +7,12 @@ model = {
     ascendingNode0: 0, 
     argumentOfPerigee0: 0, 
     timeSincePerigee0: 0,
+    osculatingSemiMajorAxis: 6378.0,
+    osculatingEccentricity: 0.01,
+    osculatingInclination: 0.01,
+    osculatingRightAscensionAscendingNode: 0.01,
+    osculatingArgumentOfPerigee: 0.01,
+    osculatingTrueAnomaly: 0.01,
     y0: Vector.create([-2384.46, 5729.01, 3050.46, -7.36138, -2.98997, 1.64354]),    
     time: 0,
     numsteps: 0,
@@ -22,6 +28,7 @@ model = {
     deltaVMagnitude: 100,
     timePrevDeltaV: 0,
     ballisticCoefficient: 0.005,
+    deltaVUsed: 0,
     initialize: function() {
         model.numsteps = model.duration / model.stepsize;
         model.orbitFromInitialKepler();
@@ -151,6 +158,7 @@ view = {
     viewOsculatingOrbitLine: true,
     viewCelestialSphere: true,
     linelength: 100000,
+    celestialSphereDistance: 20000,
     earthTexture: "Gray",
 
     satelliteColor: 0x5080a0,
@@ -160,13 +168,13 @@ view = {
     celestialSphere: new THREE.Object3D(),
 
     eccentricityVector: new THREE.Line( new THREE.Geometry(), 
-                        new THREE.LineBasicMaterial( { color: 0x880000, linewidth: 2 } )),
+                        new THREE.LineBasicMaterial( { color: 0x880000, linewidth: 4 } )),
 
     angularMomentumVector: new THREE.Line( new THREE.Geometry(), 
-                           new THREE.LineBasicMaterial( { color: 0x000088, linewidth: 2 } )),
+                           new THREE.LineBasicMaterial( { color: 0x000088, linewidth: 4 } )),
 
     semiLatusRectumVector: new THREE.Line( new THREE.Geometry(), 
-                           new THREE.LineBasicMaterial( { color: 0x008800, linewidth: 2 } )),
+                           new THREE.LineBasicMaterial( { color: 0x008800, linewidth: 4 } )),
 
 
     propagatedOrbitLine: new THREE.Line( new THREE.Geometry(), 
@@ -222,6 +230,7 @@ view = {
             axis.crossVectors(up, tangent).normalize();
             radians = Math.acos( up.dot( tangent ) );
             satellite.quaternion.setFromAxisAngle( axis, radians );
+//            satellite.translateOnAxis( up, -0.6 );
     },
 
     animate: function animate() {
@@ -236,6 +245,14 @@ view = {
 
             // Compute the properties of the osculating orbit
             model.orbit = model.orbitFromPositionVelocity(Vector.create([y.e(1),y.e(2),y.e(3)]), Vector.create([y.e(4),y.e(5),y.e(6)]) );
+            
+            // Store in model properties for DAT.GUI access:
+            model.osculatingSemiMajorAxis = model.orbit.semiMajorAxis;
+            model.osculatingEccentricity = model.orbit.eccentricity;
+            model.osculatingInclination = model.orbit.inclination * 180 / Math.PI;
+            model.osculatingRightAscensionAscendingNode = model.orbit.rightAscensionAscendingNode * 180 / Math.PI;
+            model.osculatingArgumentOfPerigee = model.orbit.argumentOfPerigee * 180 / Math.PI;
+            model.osculatingTrueAnomaly = model.orbit.trueAnomaly * 180 / Math.PI;
             
             // Compute the position vector in view units (10^6 m)
             positionViewUnits = new THREE.Vector3(model.orbit.positionVector.e(1)/1e3,model.orbit.positionVector.e(2)/1e3,model.orbit.positionVector.e(3)/1e3);
@@ -280,6 +297,7 @@ view = {
                 } 
                 var deltaV = deltaV.multiply(multiplier);
                 y.setElements([y.e(1),y.e(2),y.e(3),y.e(4)+deltaV.e(1)/1e3,y.e(5)+deltaV.e(2)/1e3,y.e(6)+deltaV.e(3)/1e3]);
+                model.deltaVUsed += deltaV.modulus();
               }
             }            
             
@@ -312,18 +330,19 @@ view = {
                                     
             // Update line from centre of Earth to satellite
             radiusLine.geometry.vertices[1] = positionViewUnits;
+            //radiusLine.geometry.vertices[1] = positionViewUnits;.clone().add(positionViewUnits.clone().normalize().multiplyScalar(0.5));
             radiusLine.geometry.verticesNeedUpdate = true;
 
             // Update eccentricity and angular momentum vectors
-            var angularMomentumEndPoint = model.orbit.angularMomentumVector.toUnitVector().multiply(10);
+            var angularMomentumEndPoint = model.orbit.angularMomentumVector.toUnitVector().multiply(view.celestialSphereDistance);
             view.angularMomentumVector.geometry.vertices[1] = ( new THREE.Vector3(angularMomentumEndPoint.e(1), angularMomentumEndPoint.e(2), angularMomentumEndPoint.e(3)) );
             view.angularMomentumVector.geometry.verticesNeedUpdate = true;
 
-            var eccentricityEndPoint = model.orbit.eccentricityVector.toUnitVector().multiply(10);
+            var eccentricityEndPoint = model.orbit.eccentricityVector.toUnitVector().multiply(view.celestialSphereDistance);
             view.eccentricityVector.geometry.vertices[1] = ( new THREE.Vector3(eccentricityEndPoint.e(1), eccentricityEndPoint.e(2), eccentricityEndPoint.e(3)) );
             view.eccentricityVector.geometry.verticesNeedUpdate = true;
 
-            var semiLatusRectumEndPoint = model.orbit.angularMomentumVector.toUnitVector().cross(model.orbit.eccentricityVector.toUnitVector()).multiply(10);
+            var semiLatusRectumEndPoint = model.orbit.angularMomentumVector.toUnitVector().cross(model.orbit.eccentricityVector.toUnitVector()).multiply(view.celestialSphereDistance);
             view.semiLatusRectumVector.geometry.vertices[1] = ( new THREE.Vector3(semiLatusRectumEndPoint.e(1), semiLatusRectumEndPoint.e(2), semiLatusRectumEndPoint.e(3)) );
             view.semiLatusRectumVector.geometry.verticesNeedUpdate = true;
 
@@ -368,11 +387,11 @@ view = {
         camera.lookAt(new THREE.Vector3(0, 0, 0));
      
         // Light    
-        var light = new THREE.AmbientLight( 0x505050 ); // soft white light
+        var light = new THREE.AmbientLight( 0x707070 ); // soft white light
         scene.add( light );
                
-        var light = new THREE.PointLight( 0xffffff, 9, 100000 );
-        light.position.set( 90000, 0, 0 );
+        var light = new THREE.PointLight( 0xffffff, 8, 100000 );
+        light.position.set( 94000, 0, 0 );
         scene.add( light );
         
         // Controls    
@@ -390,7 +409,7 @@ view = {
       
     initialize_axes: function() {  
         // Axes
-        axes = view.buildAxes( 20 );
+        axes = view.buildAxes( view.celestialSphereDistance );
         if (view.viewInertialAxes) {
           scene.add(axes);
         }
@@ -406,6 +425,7 @@ view = {
       }
       view.groundTrackLine.geometry.verticesNeedUpdate = true;
       view.propagatedOrbitLine.geometry.verticesNeedUpdate = true;
+      model.deltaVUsed = 0;
     },
     
     initialize_orbit: function() {
@@ -434,7 +454,7 @@ view = {
     
     initialize_satellite: function() {    
         // Satellite
-        var geometry = new THREE.CylinderGeometry( 0.3, 0.3, 1.6, 16 );
+        var geometry = new THREE.CylinderGeometry( 0.0, 0.15, 0.6, 32 );
         var material = new THREE.MeshPhongMaterial( { color: view.satelliteColor } );
         satellite = new THREE.Mesh (geometry, material);
         scene.add(satellite);
@@ -461,7 +481,7 @@ view = {
         if (view.viewGroundTrack) { view.earth.add(view.groundTrackLine); }
         scene.add(view.earth);
                 
-        var circleGeometry = new THREE.CircleGeometry( 10, 360 );
+        var circleGeometry = new THREE.CircleGeometry( view.celestialSphereDistance, 360 );
         view.equatorialPlane = new THREE.Mesh( circleGeometry, new THREE.MeshLambertMaterial( { emissive: 0xa08050, side: THREE.DoubleSide, transparent: true, opacity: 0.3 } ) );
         if (view.viewEquatorialPlane) {
           scene.add( view.equatorialPlane );
@@ -472,7 +492,7 @@ view = {
         view.earthMaterial.transparent = false;        
         view.earthMaterial.map = THREE.ImageUtils.loadTexture("earthmap1k.jpg");
         view.earthMaterial.bumpMap = THREE.ImageUtils.loadTexture('earthbump4k.jpg');
-        view.earthMaterial.bumpScale = 0.1;
+        view.earthMaterial.bumpScale = 0.05;
       } else if (view.earthTexture == "None") {
         view.earthMaterial.transparent = false;
         view.earthMaterial.map = THREE.ImageUtils.loadTexture("blankmap.png");
@@ -540,13 +560,13 @@ view = {
       view.earthGridLines = view.initialize_gridlines(6.39,30,0,64,1);
       if (view.viewEarthGrid) { view.earth.add(view.earthGridLines); }
       
-      var grid = view.initialize_gridlines(15000,30,0,180,5);
+      var grid = view.initialize_gridlines(view.celestialSphereDistance,30,0,180,5);
       view.celestialSphere.add(grid);
-      grid = view.initialize_gridlines(15000,15,5,180,1);
+      grid = view.initialize_gridlines(view.celestialSphereDistance,15,5,180,1);
       view.celestialSphere.add(grid)
-      grid = view.initialize_gridlines(15000,15,10,180,1);
+      grid = view.initialize_gridlines(view.celestialSphereDistance,15,10,180,1);
       view.celestialSphere.add(grid)
-      grid = view.initialize_gridlines(15000,15,15,180,1);
+      grid = view.initialize_gridlines(view.celestialSphereDistance,15,15,180,1);
       view.celestialSphere.add(grid)      
       
       if (view.viewCelestialSphere) {
@@ -557,35 +577,46 @@ view = {
 
 };
 
-var gui = new dat.GUI();
-gui.add(model,"stepsize",-180,180).name("Step size");
+var guiModel = new dat.GUI();
+var guiView = new dat.GUI();
+guiModel.add(model,"stepsize",-180,180).name("Step size");
 
-keplerFolder = gui.addFolder('Initial elements');
+keplerFolder = guiModel.addFolder('Initial elements');
 keplerFolder.add(model,"semiMajorAxis0",6378+100,45000).name("Semi-major axis").onChange( function(value) { model.initialize(); view.remove_orbit(); } );
 keplerFolder.add(model,"eccentricity0",0,0.95).name('Eccentricity').onChange( function(value) { model.initialize(); view.remove_orbit(); } );
 keplerFolder.add(model,"inclination0",0,180).name('Inclination').onChange( function(value) { model.initialize(); view.remove_orbit(); } );
 keplerFolder.add(model,"ascendingNode0",0,360).name('Right ascension of the ascending node').onChange( function(value) { model.initialize(); view.remove_orbit(); } );
 keplerFolder.add(model,"argumentOfPerigee0",0,360).name('Argument of perigee').onChange( function(value) { model.initialize(); view.remove_orbit(); } );
 
-forceModelGravityFolder = gui.addFolder('Gravity field');
+osculatingFolder = guiModel.addFolder('Osculating elements (read only)');
+osculatingFolder.add(model,"osculatingSemiMajorAxis").name("Semi-major axis").listen();
+osculatingFolder.add(model,"osculatingEccentricity",0,1).name("Eccentricity").listen();
+osculatingFolder.add(model,"osculatingInclination",0,180).name("Inclination").listen();
+osculatingFolder.add(model,"osculatingRightAscensionAscendingNode",0,360).name("Right ascension of the ascending node").listen();
+osculatingFolder.add(model,"osculatingArgumentOfPerigee",0,360).name("Argument of perigee").listen();
+osculatingFolder.add(model,"osculatingTrueAnomaly",0,360).name("True anomaly").listen();
+
+forceModelGravityFolder = guiModel.addFolder('Gravity field');
 forceModelGravityFolder.add(model,"applyJ2").name("Apply J2 gravity");
 forceModelGravityFolder.add(model,"j2factor",-50,50).name("J2 factor");
-forceModelDragFolder = gui.addFolder('Drag force');
+
+forceModelDragFolder = guiModel.addFolder('Drag force');
 forceModelDragFolder.add(model,"applyDrag").name("Apply drag");
 forceModelDragFolder.add(model,"surfaceDensity",0,10).name("Surface density");
 forceModelDragFolder.add(model,"scaleHeight",0,100).name("Scale height");
 forceModelDragFolder.add(model,"ballisticCoefficient",0.0,0.1).name("Ballistic coefficient");
 
-deltaVFolder = gui.addFolder('Delta V (use z and x keys)');
+deltaVFolder = guiModel.addFolder('Thrust (use z and x keys)');
 deltaVFolder.add(model,"deltaVMode",["Impulsive shot","Continuous thrust"]).name("Mode");
 deltaVFolder.add(model,"deltaVDirection",["Along-track","Cross-track","Radial"]).name("Direction");
 deltaVFolder.add(model,"deltaVMagnitude",0,1000).name("Magnitude");
+deltaVFolder.add(model,"deltaVUsed").name("Used Delta V").listen();
 
 // deltaVFolder.add(model,"alongTrackDeltaV",-1000,1000).name("Along-track Delta-V");
 // deltaVFolder.add(model,"crossTrackDeltaV",-1000,1000).name("Cross-track Delta-V");
 // deltaVFolder.add(model,"radialDeltaV",-1000,1000).name("Radial Delta-V");
 
-viewFolder = gui.addFolder('View');
+viewFolder = guiView.addFolder('View');
 viewFolder.add(view,"cameraPosition",["Free","Satellite","H vector","e vector"]).name("Camera position");
 viewFolder.add(view,"earthTexture",["Gray","Colour","Transparent","None"]).name("Earth texture").onChange(function(value) { view.initialize_earthTexture() });
 
@@ -618,8 +649,7 @@ viewCelestialSphereGrid.onChange(function(value) {
 });
 
 
-orbitsFolder = gui.addFolder('Orbit views');
-viewPropagatedOrbitLineButton = orbitsFolder.add(view,"viewPropagatedOrbitLine").name("Propagated orbit");
+viewPropagatedOrbitLineButton = viewFolder.add(view,"viewPropagatedOrbitLine").name("Propagated orbit");
 viewPropagatedOrbitLineButton.onChange(function(value) {
   if (value) {
     scene.add(view.propagatedOrbitLine);
@@ -628,7 +658,7 @@ viewPropagatedOrbitLineButton.onChange(function(value) {
   }
 });
 
-viewOsculatingOrbitLineButton = orbitsFolder.add(view,"viewOsculatingOrbitLine").name("Osculating orbit");
+viewOsculatingOrbitLineButton = viewFolder.add(view,"viewOsculatingOrbitLine").name("Osculating orbit");
 viewOsculatingOrbitLineButton.onChange(function(value) {
   if (value) {
     scene.add(view.osculatingOrbitLine);
@@ -640,7 +670,7 @@ viewOsculatingOrbitLineButton.onChange(function(value) {
   }
 });
 
-viewGroundTrackButton = orbitsFolder.add(view,"viewGroundTrack").name("Ground track");
+viewGroundTrackButton = viewFolder.add(view,"viewGroundTrack").name("Ground track");
 viewGroundTrackButton.onChange(function(value) {
   if (value) {
     view.earth.add(view.groundTrackLine);
@@ -649,8 +679,7 @@ viewGroundTrackButton.onChange(function(value) {
   }
 });
 
-axesFolder = gui.addFolder('Coordinate axes');
-viewPerifocalAxesButton = axesFolder.add(view,"viewPerifocalAxes").name("Perifocal axes");
+viewPerifocalAxesButton = viewFolder.add(view,"viewPerifocalAxes").name("Perifocal axes");
 viewPerifocalAxesButton.onChange(function(value) {
   if (value) {
     scene.add(view.perifocalAxes);
@@ -658,7 +687,7 @@ viewPerifocalAxesButton.onChange(function(value) {
     scene.remove(view.perifocalAxes);  
   }
 });
-viewInertialAxesButton = axesFolder.add(view,"viewInertialAxes").name("Inertial axes");
+viewInertialAxesButton = viewFolder.add(view,"viewInertialAxes").name("Inertial axes");
 viewInertialAxesButton.onChange(function(value) {
   if (value) {
     scene.add(axes);
