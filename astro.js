@@ -242,6 +242,8 @@ astro = (function() {
           j2_x = 0; j2_y = 0; j2_z = 0;
         }
         
+        // if (testval) { console.log(satellites); testval = false; }
+        
         // Drag term
         if (model.applyDrag) {
           var ballisticCoefficient = 2.5 * 1 / 500;
@@ -253,11 +255,10 @@ astro = (function() {
           var corotationVelocity =  earthAngularVelocity.cross(positionVector);
           var relativeVelocity = velocityVector.multiply(-1).add(corotationVelocity.multiply(1e-3));
           var velocitySquared = Math.pow(relativeVelocity.modulus(),2);
-          var dragVector = relativeVelocity.toUnitVector().multiply(model.ballisticCoefficient * 0.5 * rho * velocitySquared);      
+          var dragVector = relativeVelocity.toUnitVector().multiply(ballisticCoefficient * 0.5 * rho * velocitySquared);
         } else {
           dragVector = Vector.create([0,0,0]);
         }
-        
 
         var deltaV = Vector.create([0,0,0]);
         
