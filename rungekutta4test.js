@@ -100,7 +100,7 @@ model = {
 
 
 view = {
-    cameraPosition: "Free",
+    cameraPosition: "Earth",
     viewEarth: true,
     viewEarthMap: true,
     viewEarthGrid: true,
@@ -285,12 +285,19 @@ view = {
           } // End of loop over the satellites
           // Determine the camera position
           if (view.cameraPosition == "Satellite") {
-            // cameraPosition = view.satellites[0].positionViewUnits.clone().add(view.satellites[0].positionViewUnits.clone().setLength(4));
+            var satellitePosition = view.satellites[0].positionViewUnits.clone();
+            var angularMomentum = satellites[0].orbit.angularMomentumVector.dup().toUnitVector();
+            var angularMomentumOffset = new THREE.Vector3(angularMomentum.e(1),angularMomentum.e(2),angularMomentum.e(3));
+            console.log(satellitePosition, angularMomentum, angularMomentumOffset);
+            cameraPosition = satellitePosition.add(angularMomentumOffset.setLength(50));
             // camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
-            controls.target = view.satellites[0].positionViewUnits;
+            // cameraPosition = view.satellites[0].positionViewUnits.clone().add(satellites[0].orbit.angularMomentumVector.toUnitVector().multiply(-2));
+            camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+
+           controls.target = view.satellites[0].positionViewUnits;
             
             // var cameraup = view.satellites[0].angularMomentumVector.geometry.vertices[1].clone().normalize();
-//            var cameraup = view.satellites[0].positionViewUnits.clone().normalize();
+           var cameraup = view.satellites[0].positionViewUnits.clone().normalize();
 
             // console.log(cameraup);
            camera.up.set( cameraup.x, cameraup.y, cameraup.z );
@@ -376,7 +383,7 @@ view = {
         // Satellite
         satelliteView = {};
         
-        var geometry = new THREE.CylinderGeometry( 0.0, 0.3, 1.2, 32 );
+        var geometry = new THREE.CylinderGeometry( 0.0, 0.15, 0.6, 32 );
         var material = new THREE.MeshPhongMaterial( { color: satelliteModel.satelliteColor, emissive: satelliteModel.emissiveColor } );
         satelliteView.satelliteBody = new THREE.Mesh(geometry, material);
 
@@ -403,7 +410,6 @@ view = {
       satelliteView.perifocalAxes.add(satelliteView.eccentricityVector);
       satelliteView.perifocalAxes.add(satelliteView.angularMomentumVector);
 //      satelliteView.perifocalAxes.add(satelliteView.semiLatusRectumVector);
-
       var viewposition = new THREE.Vector3(satelliteModel.y0.e(1)/1e3,satelliteModel.y0.e(2)/1e3,satelliteModel.y0.e(3)/1e3);
       var gtposition = viewposition.clone().normalize().multiplyScalar(6.39);      
       for (var i=0; i < view.linelength; i++) {
@@ -551,6 +557,30 @@ var masterGUI = new dat.GUI();
 
 masterGUI.add(model,"stepsize",-180,180).name("Step size");
 var guiEnvironment = masterGUI.addFolder("Environment");
+viewFolder = guiEnvironment.addFolder('View');
+viewFolder.add(view,"cameraPosition",["Earth","Satellite"]).name("Camera target");
+viewFolder.add(view,"earthTexture",["Gray","Colour","Transparent","None"]).name("Earth texture").onChange(function(value) { view.initialize_earthTexture() });
+viewEarthGridButton = viewFolder.add(view,"viewEarthGrid").name("Lat/lon grid");
+viewEarthGridButton.onChange(view.setOrRemove(view.earthGridLines,view.earth));
+
+viewEquatorialPlaneRadius = viewFolder.add(view,"equatorialPlaneRadius",6370,view.celestialSphereDistance*5).name("Equatorial plane");
+viewEquatorialPlaneRadius.onChange(function(value) {
+  view.equatorialPlane.geometry = new THREE.CircleGeometry( value/1000, 360 );
+  view.equatorialPlane.geometryNeedsUpdate = true;
+});
+
+viewCelestialSphereGrid = viewFolder.add(view,"viewCelestialSphere").name("Celestial sphere grid");
+viewCelestialSphereGrid.onChange(view.setOrRemove(view.celestialSphere));
+
+viewInertialAxesButton = viewFolder.add(view,"viewInertialAxes").name("Inertial axes");
+viewInertialAxesButton.onChange(function(value) {
+  if (value) {
+    scene.add(axes);
+  } else {
+    scene.remove(axes);    
+  }
+})
+
 forceModelGravityFolder = guiEnvironment.addFolder('Gravity field');
 forceModelGravityFolder.add(model,"applyJ2").name("Apply J2 gravity");
 forceModelGravityFolder.add(model,"j2factor",-50,50).name("J2 factor");
@@ -566,6 +596,9 @@ for (var i = 0; i < satellites.length; i++) {
   satelliteViewFolder = guiSatellite[i].addFolder('View');
   viewSatelliteBodyButton = satelliteViewFolder.add(satellites[i],"viewSatelliteBody").name("Satellite");
   viewSatelliteBodyButton.onChange(view.setOrRemove(view.satellites[i].satelliteBody));
+  viewRadiusButton = satelliteViewFolder.add(satellites[i],"viewRadiusLine").name("Radius");
+  viewRadiusButton.onChange(view.setOrRemove(view.satellites[i].radiusLine) );
+  
   viewPropagatedOrbitLineButton = satelliteViewFolder.add(satellites[i],"viewPropagatedOrbitLine").name("Propagated orbit");
   viewPropagatedOrbitLineButton.onChange(view.setOrRemove(view.satellites[i].propagatedOrbitLine));
   viewOsculatingOrbitLineButton = satelliteViewFolder.add(satellites[i],"viewOsculatingOrbitLine").name("Osculating orbit");
@@ -579,8 +612,6 @@ for (var i = 0; i < satellites.length; i++) {
   viewOsculatingOrbitPlane.onChange( setOpacity(view.satellites[i].osculatingOrbitPlane) ); 
   viewGroundTrackButton = satelliteViewFolder.add(satellites[i],"viewGroundTrack").name("Ground track");
   viewGroundTrackButton.onChange(view.setOrRemove(view.satellites[i].groundTrackLine,view.earth));
-  viewRadiusButton = satelliteViewFolder.add(satellites[i],"viewRadiusLine").name("Radius");
-  viewRadiusButton.onChange(view.setOrRemove(view.satellites[i].radiusLine) );
   viewPerifocalAxesButton = satelliteViewFolder.add(satellites[i],"viewPerifocalAxes").name("Perifocal axes");
   viewPerifocalAxesButton.onChange(view.setOrRemove(view.satellites[i].perifocalAxes));  
   
@@ -609,29 +640,6 @@ for (var i = 0; i < satellites.length; i++) {
   deltaVFolder.add(satellites[i],"deltaVMagnitude",0,1000).name("Magnitude");
   deltaVFolder.add(satellites[i],"deltaVUsed").name("Used Delta V").listen();  
 }
-viewFolder = guiEnvironment.addFolder('View');
-viewFolder.add(view,"cameraPosition",["Free","Satellite","H vector","e vector"]).name("Camera position");
-viewFolder.add(view,"earthTexture",["Gray","Colour","Transparent","None"]).name("Earth texture").onChange(function(value) { view.initialize_earthTexture() });
-viewEarthGridButton = viewFolder.add(view,"viewEarthGrid").name("Lat/lon grid");
-viewEarthGridButton.onChange(view.setOrRemove(view.earthGridLines,view.earth));
-
-viewEquatorialPlaneRadius = viewFolder.add(view,"equatorialPlaneRadius",6370,view.celestialSphereDistance*5).name("Equatorial plane");
-viewEquatorialPlaneRadius.onChange(function(value) {
-  view.equatorialPlane.geometry = new THREE.CircleGeometry( value/1000, 360 );
-  view.equatorialPlane.geometryNeedsUpdate = true;
-});
-
-viewCelestialSphereGrid = viewFolder.add(view,"viewCelestialSphere").name("Celestial sphere grid");
-viewCelestialSphereGrid.onChange(view.setOrRemove(view.celestialSphere));
-
-viewInertialAxesButton = viewFolder.add(view,"viewInertialAxes").name("Inertial axes");
-viewInertialAxesButton.onChange(function(value) {
-  if (value) {
-    scene.add(axes);
-  } else {
-    scene.remove(axes);    
-  }
-})
 
 view.animate();
 
