@@ -307,11 +307,11 @@ var selectRefFrame = controllerContainer.append("select")
     .attr('id','selectRefFrame')
     .on("input",function() { setRefFrame() });
 selectRefFrame.append("option")
-    .attr("value","inertial")
-    .html("Inertial");
-selectRefFrame.append("option")
     .attr("value","corotating")
     .html("Corotating"); 
+selectRefFrame.append("option")
+    .attr("value","inertial")
+    .html("Inertial");
 
 controllerContainer.append("br")
 controllerContainer.append("label")

@@ -1,5 +1,5 @@
 view = {
-    refFrame: "inertial"
+    refFrame: "corotating"
 };
 model.trailRefObject = model.zeroObject;
 model.viewRefObject = model.zeroObject;
