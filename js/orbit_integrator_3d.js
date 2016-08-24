@@ -1,3 +1,231 @@
+mypresets = {
+  "preset": "Rendez-vous",
+  "closed": false,
+  "remembered": {
+    "Default": {
+      "0": {},
+      "1": {},
+      "2": {},
+      "3": {}
+    },
+    "Geostationary": {
+      "0": {
+        "cameraPosition": "Earth",
+        "earthTexture": "Gray",
+        "viewEarthGrid": true,
+        "equatorialPlaneRadius": 6368,
+        "viewCelestialSphere": true,
+        "viewInertialAxes": false
+      },
+      "1": {
+        "stepsize": 0,
+        "applyJ2": false,
+        "j2factor": 1,
+        "applyDrag": false,
+        "surfaceDensity": 1,
+        "scaleHeight": 20
+      },
+      "2": {
+        "viewSatelliteBody": true,
+        "viewRadiusLine": true,
+        "viewPropagatedOrbitLine": false,
+        "viewOsculatingOrbitLine": true,
+        "viewOsculatingOrbitPlaneOpacity": 0.5,
+        "viewGroundTrack": false,
+        "viewPerifocalAxes": false,
+        "semiMajorAxis0": 42165,
+        "eccentricity0": 0,
+        "inclination0": 0,
+        "ascendingNode0": 0,
+        "argumentOfPerigee0": 0,
+        "trueAnomaly0": 0,
+        "osculatingSemiMajorAxis": 42165,
+        "osculatingEccentricity": 0,
+        "osculatingInclination": 0,
+        "osculatingRightAscensionAscendingNode": 0,
+        "osculatingArgumentOfPerigee": 0,
+        "osculatingTrueAnomaly": null,
+        "osculatingArgumentOfLatitude": null,
+        "deltaVMode": "Impulsive shot",
+        "deltaVDirection": "Along-track",
+        "deltaVMagnitude": 100,
+        "deltaVUsed": 0
+      },
+      "3": {
+        "viewSatelliteBody": false,
+        "viewRadiusLine": false,
+        "viewPropagatedOrbitLine": false,
+        "viewOsculatingOrbitLine": false,
+        "viewOsculatingOrbitPlaneOpacity": 0,
+        "viewGroundTrack": false,
+        "viewPerifocalAxes": false,
+        "semiMajorAxis0": 7883,
+        "eccentricity0": 0.05,
+        "inclination0": 15,
+        "ascendingNode0": 30,
+        "argumentOfPerigee0": 40,
+        "trueAnomaly0": 0,
+        "osculatingSemiMajorAxis": 7883.000000000008,
+        "osculatingEccentricity": 0.05000000000000061,
+        "osculatingInclination": 14.999999999999996,
+        "osculatingRightAscensionAscendingNode": 29.999999999999996,
+        "osculatingArgumentOfPerigee": 39.999999999999844,
+        "osculatingTrueAnomaly": 8.537736462515939e-7,
+        "osculatingArgumentOfLatitude": 40.00000000000001,
+        "deltaVMode": "Impulsive shot",
+        "deltaVDirection": "Along-track",
+        "deltaVMagnitude": 100,
+        "deltaVUsed": 0
+      }
+    },
+    "Rendez-vous": {
+      "0": {
+        "cameraPosition": "Satellite 1",
+        "earthTexture": "Gray",
+        "viewEarthGrid": true,
+        "equatorialPlaneRadius": 6370,
+        "viewCelestialSphere": true,
+        "viewInertialAxes": false
+      },
+      "1": {
+        "stepsize": 22.892464013547823,
+        "applyJ2": false,
+        "j2factor": 1,
+        "applyDrag": false,
+        "surfaceDensity": 1,
+        "scaleHeight": 20
+      },
+      "2": {
+        "viewSatelliteBody": true,
+        "viewRadiusLine": true,
+        "viewPropagatedOrbitLine": false,
+        "viewOsculatingOrbitLine": true,
+        "viewOsculatingOrbitPlaneOpacity": 0,
+        "viewGroundTrack": false,
+        "viewPerifocalAxes": false,
+        "semiMajorAxis0": 9000,
+        "eccentricity0": 0,
+        "inclination0": 45,
+        "ascendingNode0": 0,
+        "argumentOfPerigee0": 0,
+        "trueAnomaly0": 0,
+        "osculatingSemiMajorAxis": 8999.99997760017,
+        "osculatingEccentricity": 1.8664698361737278e-9,
+        "osculatingInclination": 45.00000000000001,
+        "osculatingRightAscensionAscendingNode": 0,
+        "osculatingArgumentOfPerigee": 137.9541489960165,
+        "osculatingTrueAnomaly": 315.36840075829264,
+        "osculatingArgumentOfLatitude": 93.3225497543092,
+        "deltaVMode": "Impulsive shot",
+        "deltaVDirection": "Along-track",
+        "deltaVMagnitude": 0,
+        "deltaVUsed": 0
+      },
+      "3": {
+        "viewSatelliteBody": true,
+        "viewRadiusLine": true,
+        "viewPropagatedOrbitLine": false,
+        "viewOsculatingOrbitLine": true,
+        "viewOsculatingOrbitPlaneOpacity": 0,
+        "viewGroundTrack": false,
+        "viewPerifocalAxes": false,
+        "semiMajorAxis0": 9000,
+        "eccentricity0": 0,
+        "inclination0": 45,
+        "ascendingNode0": 0,
+        "argumentOfPerigee0": 0,
+        "trueAnomaly0": 350,
+        "osculatingSemiMajorAxis": 8827.008155092766,
+        "osculatingEccentricity": 0.038632878147659214,
+        "osculatingInclination": 45.00000000000001,
+        "osculatingRightAscensionAscendingNode": 0,
+        "osculatingArgumentOfPerigee": 243.46981072796638,
+        "osculatingTrueAnomaly": 221.26694095716113,
+        "osculatingArgumentOfLatitude": 104.73675168512742,
+        "deltaVMode": "Impulsive shot",
+        "deltaVDirection": "Along-track",
+        "deltaVMagnitude": 67.34479130129779,
+        "deltaVUsed": 806.1031217116804
+      }
+    }
+  },
+  "folders": {
+    "Environment": {
+      "preset": "Default",
+      "closed": true,
+      "folders": {
+        "View": {
+          "preset": "Default",
+          "closed": false,
+          "folders": {}
+        },
+        "Gravity field": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Atmospheric drag": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        }
+      }
+    },
+    "Satellite 1": {
+      "preset": "Default",
+      "closed": true,
+      "folders": {
+        "View": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Initial elements": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Osculating elements (read only)": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Thrust (use z and x keys)": {
+          "preset": "Default",
+          "closed": false,
+          "folders": {}
+        }
+      }
+    },
+    "Satellite 2": {
+      "preset": "Default",
+      "closed": false,
+      "folders": {
+        "View": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Initial elements": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Osculating elements (read only)": {
+          "preset": "Default",
+          "closed": true,
+          "folders": {}
+        },
+        "Thrust (use z and x keys)": {
+          "preset": "Default",
+          "closed": false,
+          "folders": {}
+        }
+      }
+    }
+  }
+};
+
 protosatellites = [
 {
     semiMajorAxis0: 6378+2500, 
@@ -101,6 +329,7 @@ model = {
 
 view = {
     cameraPosition: "Earth",
+    backgroundColor: "#ffffff",    
     viewEarth: true,
     viewEarthMap: true,
     viewEarthGrid: true,
@@ -284,37 +513,32 @@ view = {
 
           } // End of loop over the satellites
           // Determine the camera position
-          if (view.cameraPosition == "Satellite") {
+          if (view.cameraPosition == "Satellite 1") {
             var satellitePosition = view.satellites[0].positionViewUnits.clone();
             var angularMomentum = satellites[0].orbit.angularMomentumVector.dup().toUnitVector();
             var angularMomentumOffset = new THREE.Vector3(angularMomentum.e(1),angularMomentum.e(2),angularMomentum.e(3));
-            console.log(satellitePosition, angularMomentum, angularMomentumOffset);
             cameraPosition = satellitePosition.add(angularMomentumOffset.setLength(50));
-            // camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
-            // cameraPosition = view.satellites[0].positionViewUnits.clone().add(satellites[0].orbit.angularMomentumVector.toUnitVector().multiply(-2));
             camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
-
-           controls.target = view.satellites[0].positionViewUnits;
-            
-            // var cameraup = view.satellites[0].angularMomentumVector.geometry.vertices[1].clone().normalize();
-           var cameraup = view.satellites[0].positionViewUnits.clone().normalize();
-
-            // console.log(cameraup);
-           camera.up.set( cameraup.x, cameraup.y, cameraup.z );
-          // } else if (view.cameraPosition == "H vector") {
-          //   cameraPosition = model.orbit.angularMomentumVector.toUnitVector().multiply(80)
-          //   camera.position.set(cameraPosition.e(1), cameraPosition.e(2), cameraPosition.e(3))
-          // } else if (view.cameraPosition == "e vector") {
-          //   cameraPosition = model.orbit.eccentricityVector.toUnitVector().multiply(80)
-          //   camera.position.set(cameraPosition.e(1), cameraPosition.e(2), cameraPosition.e(3))
+            controls.target = view.satellites[0].positionViewUnits;
+            var cameraup = view.satellites[0].positionViewUnits.clone().normalize();
+            camera.up.set( cameraup.x, cameraup.y, cameraup.z );
+          } else if (view.cameraPosition == "Satellite 2") {
+            var satellitePosition = view.satellites[1].positionViewUnits.clone();
+            var angularMomentum = satellites[1].orbit.angularMomentumVector.dup().toUnitVector();
+            var angularMomentumOffset = new THREE.Vector3(angularMomentum.e(1),angularMomentum.e(2),angularMomentum.e(3));
+            cameraPosition = satellitePosition.add(angularMomentumOffset.setLength(50));
+            camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+            controls.target = view.satellites[1].positionViewUnits;
+            var cameraup = view.satellites[1].positionViewUnits.clone().normalize();
+            camera.up.set( cameraup.x, cameraup.y, cameraup.z );
           } else {
             controls.target = new THREE.Vector3(0,0,0);
             camera.up.set( 0, 0, 1 );                    
           }          
         } else { // Do nothing past the end of time
         }
-        controls.update();
-        renderer.render( scene, camera );
+       controls.update();
+       renderer.render( scene, camera );
     },
 
     initialize_renderer: function() {
@@ -558,7 +782,13 @@ var masterGUI = new dat.GUI();
 masterGUI.add(model,"stepsize",-180,180).name("Step size");
 var guiEnvironment = masterGUI.addFolder("Environment");
 viewFolder = guiEnvironment.addFolder('View');
-viewFolder.add(view,"cameraPosition",["Earth","Satellite"]).name("Camera target");
+backgroundColorWidget = viewFolder.addColor(view,"backgroundColor");
+backgroundColorWidget.onChange( function(value) {
+    document.body.style.background = value;
+    renderer.setClearColor( value, 1);
+
+})
+viewFolder.add(view,"cameraPosition",["Earth","Satellite 1","Satellite 2"]).name("Camera target");
 viewFolder.add(view,"earthTexture",["Gray","Colour","Transparent","None"]).name("Earth texture").onChange(function(value) { view.initialize_earthTexture() });
 viewEarthGridButton = viewFolder.add(view,"viewEarthGrid").name("Lat/lon grid");
 viewEarthGridButton.onChange(view.setOrRemove(view.earthGridLines,view.earth));
@@ -588,6 +818,9 @@ forceModelDragFolder = guiEnvironment.addFolder('Atmospheric drag');
 forceModelDragFolder.add(model,"applyDrag").name("Apply drag");
 forceModelDragFolder.add(model,"surfaceDensity",0,10).name("Surface density");
 forceModelDragFolder.add(model,"scaleHeight",0,100).name("Scale height");
+
+masterGUI.remember(view);
+masterGUI.remember(model);
 
 var guiSatellite = new Array;
 for (var i = 0; i < satellites.length; i++) {
@@ -639,6 +872,7 @@ for (var i = 0; i < satellites.length; i++) {
   deltaVFolder.add(satellites[i],"deltaVDirection",["Along-track","Cross-track","Radial"]).name("Direction");
   deltaVFolder.add(satellites[i],"deltaVMagnitude",0,1000).name("Magnitude");
   deltaVFolder.add(satellites[i],"deltaVUsed").name("Used Delta V").listen();  
+  masterGUI.remember(satellites[i]);  
 }
 
 view.animate();
