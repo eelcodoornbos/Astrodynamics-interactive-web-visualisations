@@ -625,15 +625,15 @@ view = {
       satelliteView.radiusLine.geometry.vertices[0] = new THREE.Vector3(0,0,0);
 
       satelliteView.perifocalAxes = new THREE.Object3D();
-      satelliteView.eccentricityVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: satelliteModel.satelliteColor, linewidth: 4 } ));
+      satelliteView.eccentricityVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: 0xFF0000, linewidth: 4 } ));
       satelliteView.eccentricityVector.geometry.vertices[0] = new THREE.Vector3(0,0,0);      
-      satelliteView.angularMomentumVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: satelliteModel.satelliteColor, linewidth: 4 } ));
+      satelliteView.angularMomentumVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: 0x0000FF, linewidth: 4 } ));
       satelliteView.angularMomentumVector.geometry.vertices[0] = new THREE.Vector3(0,0,0);
-      satelliteView.semiLatusRectumVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: satelliteModel.satelliteColor, linewidth: 4 } ));
+      satelliteView.semiLatusRectumVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: 0x00FF00, linewidth: 4 } ));
       satelliteView.semiLatusRectumVector.geometry.vertices[0] = new THREE.Vector3(0,0,0);      
       satelliteView.perifocalAxes.add(satelliteView.eccentricityVector);
       satelliteView.perifocalAxes.add(satelliteView.angularMomentumVector);
-//      satelliteView.perifocalAxes.add(satelliteView.semiLatusRectumVector);
+      satelliteView.perifocalAxes.add(satelliteView.semiLatusRectumVector);
       var viewposition = new THREE.Vector3(satelliteModel.y0.e(1)/1e3,satelliteModel.y0.e(2)/1e3,satelliteModel.y0.e(3)/1e3);
       var gtposition = viewposition.clone().normalize().multiplyScalar(6.39);      
       for (var i=0; i < view.linelength; i++) {
