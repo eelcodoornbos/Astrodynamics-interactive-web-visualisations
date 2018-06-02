@@ -46,6 +46,8 @@ mypresets = {
         "osculatingArgumentOfPerigee": 0,
         "osculatingTrueAnomaly": null,
         "osculatingArgumentOfLatitude": null,
+        "osculatingPerigeeHeight": null,
+        "osculatingApogeeHeight": null,
         "deltaVMode": "Impulsive shot",
         "deltaVDirection": "Along-track",
         "deltaVMagnitude": 100,
@@ -72,6 +74,8 @@ mypresets = {
         "osculatingArgumentOfPerigee": 39.999999999999844,
         "osculatingTrueAnomaly": 8.537736462515939e-7,
         "osculatingArgumentOfLatitude": 40.00000000000001,
+        "osculatingPerigeeHeight": null,
+        "osculatingApogeeHeight": null,
         "deltaVMode": "Impulsive shot",
         "deltaVDirection": "Along-track",
         "deltaVMagnitude": 100,
@@ -116,6 +120,8 @@ mypresets = {
         "osculatingArgumentOfPerigee": 137.9541489960165,
         "osculatingTrueAnomaly": 315.36840075829264,
         "osculatingArgumentOfLatitude": 93.3225497543092,
+        "osculatingPerigeeHeight": null,
+        "osculatingApogeeHeight": null,
         "deltaVMode": "Impulsive shot",
         "deltaVDirection": "Along-track",
         "deltaVMagnitude": 0,
@@ -142,6 +148,8 @@ mypresets = {
         "osculatingArgumentOfPerigee": 243.46981072796638,
         "osculatingTrueAnomaly": 221.26694095716113,
         "osculatingArgumentOfLatitude": 104.73675168512742,
+        "osculatingPerigeeHeight": null,
+        "osculatingApogeeHeight": null,
         "deltaVMode": "Impulsive shot",
         "deltaVDirection": "Along-track",
         "deltaVMagnitude": 67.34479130129779,
@@ -309,8 +317,11 @@ model = {
     applyJ2: false,
     j2factor: 1,
     applyDrag: false,
+    applySRP: false,
+    srp_ballisticCoefficient: 1/500,
     surfaceDensity: 1,
     scaleHeight: 20,
+    dayOfYear: 0,
     initialize: function() {
       model.numsteps = model.duration / model.stepsize;
       for (var i = 0; i < satellites.length; i++) {
@@ -416,7 +427,10 @@ view = {
             satellites[j].osculatingArgumentOfPerigee = satellites[j].orbit.argumentOfPerigee * 180 / Math.PI;
             satellites[j].osculatingTrueAnomaly = satellites[j].orbit.trueAnomaly * 180 / Math.PI;
             satellites[j].osculatingArgumentOfLatitude = satellites[j].orbit.argumentOfLatitude * 180 / Math.PI;
-            satellites[j].osculatingRightAscension = satellites[j].orbit.rightAscension * 180 / Math.PI;            
+            satellites[j].osculatingRightAscension = satellites[j].orbit.rightAscension * 180 / Math.PI;
+            satellites[j].osculatingPerigeeHeight = satellites[j].orbit.semiMajorAxis * (1-satellites[j].orbit.eccentricity)-6378.3; 
+            satellites[j].osculatingApogeeHeight = satellites[j].orbit.semiMajorAxis * (1+satellites[j].orbit.eccentricity)-6378.3;
+       
             
             // Compute the position vector in view units (10^6 m) and update
             view.satellites[j].positionViewUnits = new THREE.Vector3(satellites[j].orbit.positionVector.e(1)/1e3,satellites[j].orbit.positionVector.e(2)/1e3,satellites[j].orbit.positionVector.e(3)/1e3);
@@ -565,9 +579,9 @@ view = {
         var light = new THREE.AmbientLight( 0x707070 ); // soft white light
         scene.add( light );
                
-        var light = new THREE.PointLight( 0xffffff, 8, 100000 );
-        light.position.set( 94000, 0, 0 );
-        scene.add( light );
+        sunLight = new THREE.PointLight( 0xffffff, 0.7, 0 );
+        sunLight.position.set( 500e3, 0, 0 );
+        scene.add( sunLight );
         
         // Controls    
         controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -588,6 +602,10 @@ view = {
         if (view.viewInertialAxes) {
           scene.add(axes);
         }
+        sunVector = new THREE.Line( new THREE.Geometry(), new THREE.LineBasicMaterial( { color: 0xFFCC00, linewidth: 4 } ));
+        sunVector.geometry.vertices[0] = new THREE.Vector3(0,0,0);
+        sunVector.geometry.vertices[1] = new THREE.Vector3(view.celestialSphereDistance,0,0);
+        scene.add(sunVector);
     },
     remove_orbit: function() {
       var viewposition, gtposition;
@@ -811,6 +829,14 @@ viewInertialAxesButton.onChange(function(value) {
   }
 })
 
+forceModelSunFolder = guiEnvironment.addFolder('Sun');
+forceModelSunFolder.add(model,'dayOfYear',0,365).name('Day of year').onChange( function(value) {
+  model.sunPosition = astro.sunPositionFromDayOfYear(value)
+  var scalefactor = 500e3;
+  sunLight.position.set( scalefactor * model.sunPosition.e(1), scalefactor * model.sunPosition.e(2), scalefactor * model.sunPosition.e(3) ); 
+  sunVector.geometry.vertices[1] = new THREE.Vector3(view.celestialSphereDistance * model.sunPosition.e(1), view.celestialSphereDistance * model.sunPosition.e(2), view.celestialSphereDistance * model.sunPosition.e(3));
+  sunVector.geometry.verticesNeedUpdate = true;
+} );
 forceModelGravityFolder = guiEnvironment.addFolder('Gravity field');
 forceModelGravityFolder.add(model,"applyJ2").name("Apply J2 gravity");
 forceModelGravityFolder.add(model,"j2factor",-50,50).name("J2 factor");
@@ -818,6 +844,8 @@ forceModelDragFolder = guiEnvironment.addFolder('Atmospheric drag');
 forceModelDragFolder.add(model,"applyDrag").name("Apply drag");
 forceModelDragFolder.add(model,"surfaceDensity",0,10).name("Surface density");
 forceModelDragFolder.add(model,"scaleHeight",0,100).name("Scale height");
+forceModelDragFolder.add(model,"applySRP").name("Apply solar radiation pressure");
+forceModelDragFolder.add(model,"srp_ballisticCoefficient",0,100).name("CR * A / m");
 
 masterGUI.remember(view);
 masterGUI.remember(model);
@@ -864,6 +892,8 @@ for (var i = 0; i < satellites.length; i++) {
   osculatingFolder.add(satellites[i],"osculatingArgumentOfPerigee",0,360).name("Argument of perigee").listen();
   osculatingFolder.add(satellites[i],"osculatingTrueAnomaly",0,360).name("True anomaly").listen();
   osculatingFolder.add(satellites[i],"osculatingArgumentOfLatitude",0,360).name("Argument of latitude").listen();
+  osculatingFolder.add(satellites[i],"osculatingPerigeeHeight",0,40000).name("Perigee height").listen();
+  osculatingFolder.add(satellites[i],"osculatingApogeeHeight",0,40000).name("Apogee height").listen();
 //  osculatingFolder.add(satellites[i],"osculatingRightAscension",0,360).name("Right Ascension").listen();    
 //  osculatingFolder.add(satellites[i],"ballisticCoefficient",0.0,0.1).name("Ballistic coefficient");
 
