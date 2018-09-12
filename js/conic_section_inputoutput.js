@@ -26,7 +26,7 @@ function conicSectionInputOutput() {
 
         { label: "Argument of perigee",
           property: "argumentOfPerigee",
-          prefix: "<i>&phi;</i> = ",
+          prefix: "<i>&omega;</i> = ",
           multiplier: 180 / Math.PI,
           units: "&deg;",
           min: 0,
